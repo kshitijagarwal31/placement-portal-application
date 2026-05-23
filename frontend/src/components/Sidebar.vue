@@ -50,24 +50,20 @@
 
       <div v-if="role === 'student'">
 
-        <router-link to="/student/dashboard" class="menu-item">
+        <router-link to="/student_dashboard" class="menu-item">
           📊 Dashboard
         </router-link>
 
-        <router-link to="/student/profile" class="menu-item">
+        <router-link to="/student_dashboard/profile" class="menu-item">
           👤 Complete Profile
         </router-link>
 
-        <router-link to="/student/drives" class="menu-item">
+        <router-link to="/student_dashboard/placement_drives" class="menu-item">
           📅 Placement Drives
         </router-link>
 
-        <router-link to="/student/applications" class="menu-item">
+        <router-link to="/student_dashboard/applications" class="menu-item">
           📄 My Applications
-        </router-link>
-
-        <router-link to="/student/resume" class="menu-item">
-          📁 Resume
         </router-link>
 
       </div>
