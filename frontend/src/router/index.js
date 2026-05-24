@@ -17,6 +17,12 @@ import StudentProfileView from "../views/StudentProfileView.vue"
 import StudentPlacementDriveView from "../views/StudentPlacementDriveView.vue"
 import StudentApplicationView from "../views/StudentApplicationView.vue"
 
+import CompanyDashboardView from "../views/CompanyDashboardView.vue"
+import CompanyHomeView from "../views/CompanyHomeView.vue"
+import CompanyCreateDriveView from "../views/CompanyCreateDriveView.vue"
+import CompanyApplicationsView from "../views/CompanyApplicationsView.vue"
+import CompanyPlacementDriveView from "../views/CompanyPlacementDriveView.vue"
+
 
 const routes = [
     {path: "/", component: HomeView},
@@ -36,6 +42,13 @@ const routes = [
         {path: "profile", component: StudentProfileView},
         {path: "placement_drives", component: StudentPlacementDriveView},
         {path: "applications", component: StudentApplicationView}
+    ]},
+
+    {path: "/company_dashboard", component: CompanyDashboardView, children: [
+        {path: "", component: CompanyHomeView},
+        {path: "create_drive", component: CompanyCreateDriveView},
+        {path: "applications", component: CompanyApplicationsView},
+        {path: "placement_drives", component: CompanyPlacementDriveView}
     ]}
 ]
 

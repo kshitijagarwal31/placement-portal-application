@@ -70,24 +70,20 @@
 
       <div v-if="role === 'company'">
 
-        <router-link to="/company/dashboard" class="menu-item">
+        <router-link to="/company_dashboard" class="menu-item">
           📊 Dashboard
         </router-link>
 
-        <router-link to="/company/jobs" class="menu-item">
-          💼 Post Job
+        <router-link to="/company_dashboard/create_drive" class="menu-item">
+          💼 Create Drive
         </router-link>
 
-        <router-link to="/company/applicants" class="menu-item">
-          👨‍🎓 Applicants
+        <router-link to="/company_dashboard/applications" class="menu-item">
+          👨‍🎓 Applications
         </router-link>
 
-        <router-link to="/company/drives" class="menu-item">
+        <router-link to="/company_dashboard/placement_drives" class="menu-item">
           📅 Placement Drives
-        </router-link>
-
-        <router-link to="/company/selected" class="menu-item">
-          ✅ Selected Students
         </router-link>
 
       </div>
