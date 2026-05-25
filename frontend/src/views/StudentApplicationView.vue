@@ -1,83 +1,57 @@
 <template>
+  <div>
 
-  <div class="applications-page">
     <div class="topbar">
       <div>
-        <h1>
-          My Applications
-        </h1>
-        <p>
-          Track all your placement applications
-        </p>
+        <h1>My Applications</h1>
+        <p>Track all your placement applications • {{ applications.length }} total</p>
       </div>
       <input
         v-model="search"
+        class="search-input"
         type="text"
         placeholder="Search by company or drive..."
-        class="search-input"
       />
     </div>
-    <div class="applications-grid">
-      <div
-        class="application-card"
-        v-for="application in filteredApplications"
-        :key="application.id"
-      >
 
-        <div class="card-top">
-          <div>
-            <h2>
-              {{ application.drive }}
-            </h2>
-            <p class="company-name">
-              {{ application.company }}
-            </p>
-          </div>
-          <span
-            :class="[
-              'status-badge',
+    <div class="table-box">
+      <table>
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>Company</th>
+            <th>Role / Drive</th>
+            <th>Applied On</th>
+            <th>Package</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(app, index) in filteredApplications" :key="app.id">
+            <td>{{ index + 1 }}</td>
+            <td>{{ app.company }}</td>
+            <td>{{ app.drive }}</td>
+            <td>{{ app.date }}</td>
+            <td>{{ app.package }}</td>
+            <td>
+              <span :class="getStatusClass(app.status)">
+                {{ app.status }}
+              </span>
+            </td>
+            <td>
+              <button class="btn-view" @click="$router.push('/student_dashboard/application_detail')">View Details</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
-              application.status === 'Applied'
-              ? 'status-applied'
-
-              : application.status === 'Shortlisted'
-              ? 'status-shortlisted'
-
-              : application.status === 'Rejected'
-              ? 'status-rejected'
-
-              : 'status-selected'
-            ]"
-          >
-
-            {{ application.status }}
-          </span>
-        </div>
-        <div class="card-details">
-          <div class="detail-item">
-            <p class="detail-label">
-              Applied On
-            </p>
-            <h4>
-              {{ application.date }}
-            </h4>
-          </div>
-          <div class="detail-item">
-            <p class="detail-label">
-              Package
-            </p>
-            <h4>
-              {{ application.package }}
-            </h4>
-          </div>
-        </div>
-        <button class="view-btn">
-          View Details
-        </button>
+      <div v-if="filteredApplications.length === 0" class="empty">
+        No applications found
       </div>
     </div>
-  </div>
 
+  </div>
 </template>
 
 <script>
@@ -90,244 +64,207 @@ export default {
       applications: [
         {
           id: 1,
-          drive: "Software Engineer Hiring",
           company: "Google",
-          status: "Applied",
+          drive: "Software Engineer Hiring",
           date: "20 May 2026",
-          package: "45 LPA"
+          package: "45 LPA",
+          status: "Applied"
         },
         {
           id: 2,
-          drive: "SDE-1 Recruitment",
           company: "Microsoft",
-          status: "Shortlisted",
+          drive: "SDE-1 Recruitment",
           date: "18 May 2026",
-          package: "40 LPA"
+          package: "40 LPA",
+          status: "Shortlisted"
         },
         {
           id: 3,
-          drive: "Backend Developer Drive",
           company: "Amazon",
-          status: "Rejected",
+          drive: "Backend Developer Drive",
           date: "15 May 2026",
-          package: "35 LPA"
+          package: "35 LPA",
+          status: "Rejected"
         },
         {
           id: 4,
-          drive: "Frontend Hiring",
           company: "Flipkart",
-          status: "Selected",
+          drive: "Frontend Hiring",
           date: "12 May 2026",
-          package: "28 LPA"
+          package: "28 LPA",
+          status: "Selected"
         },
         {
           id: 5,
-          drive: "Full Stack Developer",
           company: "Zomato",
-          status: "Applied",
+          drive: "Full Stack Developer",
           date: "22 May 2026",
-          package: "18 LPA"
+          package: "18 LPA",
+          status: "Applied"
         }
       ]
     }
   },
 
   computed: {
-
     filteredApplications() {
-      const query = this.search.toLowerCase()
-      return this.applications.filter(application =>
-        application.company.toLowerCase().includes(query) ||
-        application.drive.toLowerCase().includes(query)
-
+      const q = this.search.toLowerCase()
+      return this.applications.filter(app =>
+        app.company.toLowerCase().includes(q) ||
+        app.drive.toLowerCase().includes(q)
       )
+    }
+  },
+
+  methods: {
+    getStatusClass(status) {
+      if (status === 'Selected') return 'badge-selected'
+      if (status === 'Shortlisted') return 'badge-shortlisted'
+      if (status === 'Rejected') return 'badge-rejected'
+      return 'badge-applied'
+    },
+
+    viewDetails(app) {
+      this.$router.push(`/student/application/${app.id}`)
     }
   }
 }
-
 </script>
 
 <style scoped>
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
 }
 
-.applications-page{
-  width:100%;
+.topbar h1 {
+  font-size: 34px;
+  color: #111827;
+  margin-bottom: 4px;
 }
 
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:20px;
-  margin-bottom:28px;
-  flex-wrap:wrap;
+.topbar p {
+  color: #6b7280;
+  font-size: 15px;
 }
 
-.topbar h1{
-  font-size:30px;
-  color:#111827;
-  margin-bottom:4px;
+.search-input {
+  padding: 11px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #111827;
+  width: 280px;
+  outline: none;
+  transition: 0.2s;
+  background: white;
 }
 
-.topbar p{
-  color:#6b7280;
-  font-size:14px;
+.search-input:focus {
+  border-color: #2563eb;
 }
 
-.search-input{
-  width:260px;
-  padding:11px 14px;
-  border:1px solid #e5e7eb;
-  border-radius:10px;
-  outline:none;
-  font-size:14px;
-  transition:0.2s;
-  background:white;
+.table-box {
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
-.search-input:focus{
-  border-color:#2563eb;
+table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.applications-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-  gap:20px;
+thead {
+  background: #f9fafb;
 }
 
-.application-card{
-  background:white;
-  border-radius:18px;
-  padding:20px;
-  border:1px solid #f1f5f9;
-  box-shadow:0 4px 12px rgba(0,0,0,0.05);
-
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-
-  min-height:220px;
-
-  transition:0.2s;
+th {
+  padding: 16px 20px;
+  text-align: left;
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.application-card:hover{
-  transform:translateY(-3px);
+td {
+  padding: 16px 20px;
+  font-size: 15px;
+  color: #111827;
+  border-bottom: 1px solid #f3f4f6;
+  font-weight: 600;
 }
 
-.card-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:12px;
-  margin-bottom:18px;
+tr:last-child td {
+  border-bottom: none;
 }
 
-.card-top h2{
-  font-size:19px;
-  color:#111827;
-  line-height:1.4;
-  margin-bottom:4px;
+tr:hover td {
+  background: #f9fafb;
 }
 
-.company-name{
-  color:#6b7280;
-  font-size:14px;
+.btn-view {
+  background: #eff6ff;
+  color: #2563eb;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-.card-details{
-  display:flex;
-  gap:12px;
-  margin-bottom:18px;
+.btn-view:hover {
+  background: #dbeafe;
 }
 
-.detail-item{
-  flex:1;
-  background:#f9fafb;
-  padding:14px;
-  border-radius:12px;
+.badge-selected {
+  background: #dcfce7;
+  color: #16a34a;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
-.detail-label{
-  color:#6b7280;
-  font-size:12px;
-  margin-bottom:6px;
+.badge-shortlisted {
+  background: #fef9c3;
+  color: #ca8a04;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
-.detail-item h4{
-  color:#111827;
-  font-size:14px;
+.badge-rejected {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
-.view-btn{
-  width:100%;
-  border:none;
-  background:#2563eb;
-  color:white;
-  padding:11px;
-  border-radius:10px;
-  font-size:14px;
-  font-weight:600;
-  cursor:pointer;
-  transition:0.2s;
+.badge-applied {
+  background: #dbeafe;
+  color: #2563eb;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
-.view-btn:hover{
-  background:#1d4ed8;
-}
-
-.status-badge{
-  padding:6px 12px;
-  border-radius:20px;
-  font-size:12px;
-  font-weight:600;
-  white-space:nowrap;
-}
-
-.status-applied{
-  background:#dbeafe;
-  color:#2563eb;
-}
-
-.status-shortlisted{
-  background:#fef3c7;
-  color:#d97706;
-}
-
-.status-rejected{
-  background:#fee2e2;
-  color:#dc2626;
-}
-
-.status-selected{
-  background:#dcfce7;
-  color:#16a34a;
-}
-
-@media(max-width:700px){
-
-  .topbar{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-
-  .search-input{
-    width:100%;
-  }
-
-  .topbar h1{
-    font-size:26px;
-  }
-
-  .card-details{
-    flex-direction:column;
-  }
-
+.empty {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 15px;
+  padding: 40px 0;
 }
 
 </style>
