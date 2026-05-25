@@ -44,11 +44,16 @@
               </span>
             </td>
             <td>
-              <button class="btn-view">View</button>
+              <button class="btn-view" @click="$router.push('/admin_dashboard/application_detail')">View</button>
             </td>
           </tr>
         </tbody>
       </table>
+
+      <div v-if="filteredApplications.length === 0" class="empty">
+        No applications found
+      </div>
+
     </div>
 
   </div>
@@ -62,14 +67,14 @@ export default {
     return {
       search: "",
       applications: [
-        { id: 1, student: "Rahul Sharma",  company: "Google",    role: "Software Engineer",    appliedOn: "10 May 2026", status: "Selected" },
-        { id: 2, student: "Priya Singh",   company: "Microsoft", role: "SDE-1",                appliedOn: "11 May 2026", status: "Pending"  },
-        { id: 3, student: "Amit Kumar",    company: "Amazon",    role: "Backend Developer",    appliedOn: "12 May 2026", status: "Rejected" },
-        { id: 4, student: "Sneha Verma",   company: "Flipkart",  role: "Frontend Developer",   appliedOn: "13 May 2026", status: "Selected" },
-        { id: 5, student: "Rohan Gupta",   company: "Zomato",    role: "Full Stack Developer",  appliedOn: "14 May 2026", status: "Pending"  },
-        { id: 6, student: "Pooja Yadav",   company: "Infosys",   role: "Systems Engineer",     appliedOn: "15 May 2026", status: "Selected" },
-        { id: 7, student: "Vikram Patel",  company: "TCS",       role: "Developer",            appliedOn: "16 May 2026", status: "Rejected" },
-        { id: 8, student: "Anjali Mishra", company: "Wipro",     role: "Junior Developer",     appliedOn: "17 May 2026", status: "Pending"  },
+        { id: 1, student: "Rahul Sharma",  company: "Google",    role: "Software Engineer",   appliedOn: "10 May 2026", status: "Selected" },
+        { id: 2, student: "Priya Singh",   company: "Microsoft", role: "SDE-1",               appliedOn: "11 May 2026", status: "Pending"  },
+        { id: 3, student: "Amit Kumar",    company: "Amazon",    role: "Backend Developer",   appliedOn: "12 May 2026", status: "Rejected" },
+        { id: 4, student: "Sneha Verma",   company: "Flipkart",  role: "Frontend Developer",  appliedOn: "13 May 2026", status: "Selected" },
+        { id: 5, student: "Rohan Gupta",   company: "Zomato",    role: "Full Stack Developer", appliedOn: "14 May 2026", status: "Pending"  },
+        { id: 6, student: "Pooja Yadav",   company: "Infosys",   role: "Systems Engineer",    appliedOn: "15 May 2026", status: "Selected" },
+        { id: 7, student: "Vikram Patel",  company: "TCS",       role: "Developer",           appliedOn: "16 May 2026", status: "Rejected" },
+        { id: 8, student: "Anjali Mishra", company: "Wipro",     role: "Junior Developer",    appliedOn: "17 May 2026", status: "Pending"  },
       ]
     }
   },
@@ -99,7 +104,7 @@ export default {
 .topbar h1 {
   font-size: 34px;
   color: #111827;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
 .topbar p {
@@ -108,13 +113,15 @@ export default {
 }
 
 .search-input {
-  padding: 10px 16px;
+  padding: 11px 14px;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   font-size: 14px;
   color: #111827;
   width: 280px;
   outline: none;
+  transition: 0.2s;
+  background: white;
 }
 
 .search-input:focus {
@@ -151,6 +158,7 @@ td {
   font-size: 15px;
   color: #111827;
   border-bottom: 1px solid #f3f4f6;
+  font-weight: 600;
 }
 
 tr:last-child td {
@@ -192,7 +200,7 @@ tr:hover td {
   background: #eff6ff;
   color: #2563eb;
   border: none;
-  padding: 8px 16px;
+  padding: 8px 14px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
@@ -202,6 +210,13 @@ tr:hover td {
 
 .btn-view:hover {
   background: #dbeafe;
+}
+
+.empty {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 15px;
+  padding: 40px 0;
 }
 
 </style>

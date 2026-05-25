@@ -52,7 +52,7 @@
                 </template>
 
                 <template v-if="company.status === 'Active'">
-                  <button class="btn-view">View Profile</button>
+                  <button class="btn-view" @click="$router.push('/admin_dashboard/company_profile')">View Profile</button>
                 </template>
 
                 <template v-if="company.status === 'Rejected'">
@@ -64,6 +64,11 @@
           </tr>
         </tbody>
       </table>
+
+      <div v-if="filteredCompanies.length === 0" class="empty">
+        No companies found
+      </div>
+
     </div>
 
   </div>
@@ -93,7 +98,7 @@ export default {
     filteredCompanies() {
       const q = this.search.toLowerCase()
       return this.companies.filter(c =>
-        c.name.toLowerCase().includes(q) ||
+        c.name.toLowerCase().includes(q)     ||
         c.industry.toLowerCase().includes(q) ||
         c.location.toLowerCase().includes(q)
       )
@@ -119,7 +124,7 @@ export default {
 .topbar h1 {
   font-size: 34px;
   color: #111827;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
 .topbar p {
@@ -128,13 +133,15 @@ export default {
 }
 
 .search-input {
-  padding: 10px 16px;
+  padding: 11px 14px;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   font-size: 14px;
   color: #111827;
   width: 280px;
   outline: none;
+  transition: 0.2s;
+  background: white;
 }
 
 .search-input:focus {
@@ -171,6 +178,7 @@ td {
   font-size: 15px;
   color: #111827;
   border-bottom: 1px solid #f3f4f6;
+  font-weight: 600;
 }
 
 tr:last-child td {
@@ -223,7 +231,7 @@ tr:hover td {
   background: #eff6ff;
   color: #2563eb;
   border: none;
-  padding: 8px 16px;
+  padding: 8px 14px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
@@ -265,6 +273,13 @@ tr:hover td {
   border-radius: 20px;
   font-size: 13px;
   font-weight: 600;
+}
+
+.empty {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 15px;
+  padding: 40px 0;
 }
 
 </style>
