@@ -74,6 +74,10 @@
           📊 Dashboard
         </router-link>
 
+        <router-link to="/company_dashboard/profile" class="menu-item">
+          👤 Complete Profile
+        </router-link>
+
         <router-link to="/company_dashboard/create_drive" class="menu-item">
           💼 Create Drive
         </router-link>
@@ -83,7 +87,7 @@
         </router-link>
 
         <router-link to="/company_dashboard/placement_drives" class="menu-item">
-          📅 Placement Drives
+          📅 My Placement Drives
         </router-link>
 
       </div>

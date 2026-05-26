@@ -3,8 +3,8 @@
 
     <div class="topbar">
       <div>
-        <h1>Post Placement Drive</h1>
-        <p>Create a new placement drive for students</p>
+        <h1>Company Profile</h1>
+        <p>Manage your company information</p>
       </div>
     </div>
 
@@ -13,76 +13,95 @@
       <div class="section-box">
 
         <div class="preview-top">
-          <div class="preview-avatar">{{ form.job_title ? form.job_title.charAt(0) : '?' }}</div>
-          <h2>{{ form.job_title || 'Job Title' }}</h2>
-          <p>{{ form.salary || 'Package' }}</p>
+          <div class="preview-avatar">{{ form.full_name ? form.full_name.charAt(0) : '?' }}</div>
+          <h2>{{ form.full_name || 'Company Name' }}</h2>
+          <p>{{ form.industry || 'Industry' }}</p>
         </div>
 
         <div class="profile-details">
           <div class="detail-row">
-            <span class="detail-label">Start Date</span>
-            <span class="detail-value">{{ form.start_date || '—' }}</span>
+            <span class="detail-label">Username</span>
+            <span class="detail-value">{{ form.username || '—' }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Last Date</span>
-            <span class="detail-value">{{ form.last_date || '—' }}</span>
+            <span class="detail-label">Email</span>
+            <span class="detail-value">{{ form.email || '—' }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Skills Required</span>
-            <span class="detail-value">{{ form.skills_required || '—' }}</span>
+            <span class="detail-label">HR Contact</span>
+            <span class="detail-value">{{ form.hr_contact || '—' }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Status</span>
-            <span class="badge-pending">Pending Approval</span>
+            <span class="detail-label">Address</span>
+            <span class="detail-value">{{ form.address || '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Website</span>
+            <span class="detail-value">{{ form.website || '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Account Status</span>
+            <span class="badge-active">Active</span>
           </div>
         </div>
 
         <div class="info-box">
-          <p>⚠️ After submission, admin will review and approve your drive.</p>
+          <p>💡 Keep your profile updated so students can learn more about your company.</p>
         </div>
 
       </div>
 
       <div class="section-box">
 
-        <h3 class="form-title">Drive Details</h3>
-
-        <div class="form-group">
-          <label>Job Title <span class="required">*</span></label>
-          <input v-model="form.job_title" type="text" placeholder="e.g. Software Engineer" />
-        </div>
-
-        <div class="form-group">
-          <label>Job Description <span class="required">*</span></label>
-          <textarea v-model="form.job_description" placeholder="Describe the job role, responsibilities..." rows="4"></textarea>
-        </div>
+        <h3 class="form-title">Company Information</h3>
 
         <div class="form-row">
           <div class="form-group">
-            <label>Package / Salary</label>
-            <input v-model="form.salary" type="text" placeholder="e.g. 12 LPA" />
+            <label>Full Name <span class="required">*</span></label>
+            <input v-model="form.full_name" type="text" placeholder="e.g. Google India Pvt Ltd" />
           </div>
           <div class="form-group">
-            <label>Skills Required</label>
-            <input v-model="form.skills_required" type="text" placeholder="e.g. Python, React, SQL" />
+            <label>Username <span class="required">*</span></label>
+            <input v-model="form.username" type="text" placeholder="e.g. google_hr" />
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label>Start Date <span class="required">*</span></label>
-            <input v-model="form.start_date" type="date" />
+            <label>Email <span class="required">*</span></label>
+            <input v-model="form.email" type="email" placeholder="e.g. hr@google.com" />
           </div>
           <div class="form-group">
-            <label>Last Date to Apply <span class="required">*</span></label>
-            <input v-model="form.last_date" type="date" />
+            <label>Industry <span class="required">*</span></label>
+            <input v-model="form.industry" type="text" placeholder="e.g. Information Technology" />
           </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>HR Contact Number <span class="required">*</span></label>
+            <input v-model="form.hr_contact" type="text" placeholder="e.g. +91 9876543210" />
+          </div>
+          <div class="form-group">
+            <label>Website Link</label>
+            <input v-model="form.website" type="text" placeholder="e.g. www.google.com" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Address <span class="required">*</span></label>
+          <input v-model="form.address" type="text" placeholder="e.g. 123, MG Road, Bangalore, India" />
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea v-model="form.description" placeholder="Write a short description about your company..." rows="4"></textarea>
         </div>
 
         <div class="form-bottom">
           <p v-if="errorMsg" class="error-msg">{{ errorMsg }}</p>
-          <p v-if="submitted" class="save-msg">✅ Drive submitted! Waiting for admin approval.</p>
-          <button class="btn-save" @click="submitDrive">Submit Drive</button>
+          <p v-if="saved" class="save-msg">✅ Profile saved successfully!</p>
+          <button class="btn-save" @click="saveProfile">Save Profile</button>
         </div>
 
       </div>
@@ -94,26 +113,28 @@
 
 <script>
 export default {
-  name: "CompanyPostDriveView",
+  name: "CompanyProfileView",
 
   data() {
     return {
-      submitted: false,
-      errorMsg:  "",
+      saved: false,
+      errorMsg: "",
       form: {
-        job_title:       "",
-        job_description: "",
-        salary:          "",
-        skills_required: "",
-        start_date:      "",
-        last_date:       "",
+        full_name:   "",
+        username:    "",
+        email:       "",
+        industry:    "",
+        hr_contact:  "",
+        website:     "",
+        address:     "",
+        description: "",
       }
     }
   },
 
   methods: {
-    submitDrive() {
-      const required = ['job_title', 'job_description', 'start_date', 'last_date']
+    saveProfile() {
+      const required = ['full_name', 'username', 'email', 'industry', 'hr_contact', 'address']
       const allFilled = required.every(f => this.form[f] !== '')
 
       if (!allFilled) {
@@ -121,24 +142,11 @@ export default {
         return
       }
 
-      if (this.form.start_date >= this.form.last_date) {
-        this.errorMsg = "Last date must be after start date!"
-        return
-      }
-
-      this.errorMsg  = ""
-      this.submitted = true
+      this.errorMsg = ""
+      this.saved    = true
 
       setTimeout(() => {
-        this.submitted = false
-        this.form = {
-          job_title:       "",
-          job_description: "",
-          salary:          "",
-          skills_required: "",
-          start_date:      "",
-          last_date:       "",
-        }
+        this.saved = false
       }, 3000)
     }
   }
@@ -227,7 +235,7 @@ export default {
   border-bottom: 1px solid #f3f4f6;
 }
 
-.detail-label { 
+.detail-label {
   color: #6b7280; 
 }
 
@@ -239,9 +247,9 @@ export default {
   word-break: break-word;
 }
 
-.badge-pending {
-  background: #fef9c3;
-  color: #ca8a04;
+.badge-active {
+  background: #dcfce7;
+  color: #16a34a;
   font-size: 13px;
   font-weight: 600;
   padding: 5px 14px;
@@ -283,7 +291,7 @@ export default {
 }
 
 .required { 
-  color: #dc2626;
+  color: #dc2626; 
 }
 
 .form-group input,
@@ -298,6 +306,7 @@ export default {
   transition: 0.2s;
   box-sizing: border-box;
   background: white;
+  font-family: inherit;
 }
 
 .form-group input:focus,
@@ -305,8 +314,8 @@ export default {
   border-color: #2563eb;
 }
 
-.form-bottom { 
-  margin-top: 6px;
+.form-bottom {
+  margin-top: 6px; 
 }
 
 .btn-save {
@@ -339,6 +348,5 @@ export default {
   font-weight: 600;
   margin-bottom: 12px;
 }
-
 
 </style>

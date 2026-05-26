@@ -28,6 +28,7 @@ import CompanyHomeView from "../views/CompanyHomeView.vue"
 import CompanyCreateDriveView from "../views/CompanyCreateDriveView.vue"
 import CompanyApplicationsView from "../views/CompanyApplicationsView.vue"
 import CompanyPlacementDriveView from "../views/CompanyPlacementDriveView.vue"
+import CompanyProfileView from "../views/CompanyProfileView.vue"
 
 const routes = [
     {path: "/", component: HomeView},
@@ -59,7 +60,8 @@ const routes = [
         {path: "", component: CompanyHomeView},
         {path: "create_drive", component: CompanyCreateDriveView},
         {path: "applications", component: CompanyApplicationsView},
-        {path: "placement_drives", component: CompanyPlacementDriveView}
+        {path: "placement_drives", component: CompanyPlacementDriveView},
+        {path: "profile", component: CompanyProfileView}
     ]}
 ]
 
