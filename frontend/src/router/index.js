@@ -7,13 +7,9 @@ import RegisterView from "../views/RegisterView.vue"
 import AdminDashboardView from "../views/AdminDashboardView.vue"
 import AdminHomeView from "../views/AdminHomeView.vue"
 import AdminStudentsView from "../views/AdminStudentsView.vue"
-import AdminStudentProfileView from "../views/AdminStudentProfileView.vue"
 import AdminCompaniesView from "../views/AdminCompaniesView.vue"
-import AdminCompanyProfileView from "../views/AdminCompanyProfileView.vue"
 import AdminPlacementDrivesView from "../views/AdminPlacementDrivesView.vue"
-import AdminPlacementDriveDetailView from "../views/AdminPlacementDriveDetailView.vue"
 import AdminApplicationsView from "../views/AdminApplicationsView.vue"
-import AdminApplicationDetailView from "../views/AdminApplicationDetailView.vue"
 
 import StudentDashboardView from "../views/StudentDashboardView.vue"
 import StudentHomeView from "../views/StudentHomeView.vue"
@@ -38,13 +34,9 @@ const routes = [
     {path: "/admin_dashboard", component: AdminDashboardView, children: [
         {path: "", component: AdminHomeView},
         {path: "students", component: AdminStudentsView},
-        {path: "student_profile", component: AdminStudentProfileView},
         {path: "companies", component: AdminCompaniesView,},
-        {path: "company_profile", component: AdminCompanyProfileView},
         {path: "placement_drives", component: AdminPlacementDrivesView},
-        {path: "placement_drive_detail", component: AdminPlacementDriveDetailView},
-        {path: "applications", component: AdminApplicationsView},
-        {path: "application_detail", component: AdminApplicationDetailView}
+        {path: "applications", component: AdminApplicationsView}
     ]},
 
     {path: "/student_dashboard", component: StudentDashboardView, children: [

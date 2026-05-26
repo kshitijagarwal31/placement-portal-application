@@ -44,7 +44,7 @@
               </span>
             </td>
             <td>
-              <button class="btn-view" @click="$router.push('/admin_dashboard/application_detail')">View</button>
+              <button class="btn-view" @click="viewDetail(application)">View</button>
             </td>
           </tr>
         </tbody>
@@ -53,7 +53,69 @@
       <div v-if="filteredApplications.length === 0" class="empty">
         No applications found
       </div>
+    </div>
 
+    <div v-if="selectedApplication" class="modal-overlay" @click.self="selectedApplication = null">
+      <div class="modal">
+
+        <div class="modal-header">
+          <h3>Application Detail</h3>
+          <button class="btn-close" @click="selectedApplication = null">✕</button>
+        </div>
+
+        <div class="detail-top">
+          <div class="avatar-lg">{{ selectedApplication.student.charAt(0) }}</div>
+          <div>
+            <h4>{{ selectedApplication.student }}</h4>
+            <p>{{ selectedApplication.company }} · {{ selectedApplication.role }}</p>
+          </div>
+          <span :class="
+            selectedApplication.status === 'Selected' ? 'badge-selected' :
+            selectedApplication.status === 'Pending'  ? 'badge-pending'  :
+            'badge-rejected'
+          ">{{ selectedApplication.status }}</span>
+        </div>
+
+        <div class="detail-rows">
+          <div class="detail-row">
+            <span class="detail-label">Student Name</span>
+            <span class="detail-value">{{ selectedApplication.student }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Branch</span>
+            <span class="detail-value">{{ selectedApplication.branch }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">CGPA</span>
+            <span class="detail-value">{{ selectedApplication.cgpa }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Email</span>
+            <span class="detail-value">{{ selectedApplication.email }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Company</span>
+            <span class="detail-value">{{ selectedApplication.company }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Role</span>
+            <span class="detail-value">{{ selectedApplication.role }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Package</span>
+            <span class="detail-value">{{ selectedApplication.package }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Applied On</span>
+            <span class="detail-value">{{ selectedApplication.appliedOn }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Resume</span>
+            <a :href="selectedApplication.resume" target="_blank" class="website-link">📄 View Resume</a>
+          </div>
+        </div>
+
+      </div>
     </div>
 
   </div>
@@ -66,15 +128,16 @@ export default {
   data() {
     return {
       search: "",
+      selectedApplication: null,
       applications: [
-        { id: 1, student: "Rahul Sharma",  company: "Google",    role: "Software Engineer",   appliedOn: "10 May 2026", status: "Selected" },
-        { id: 2, student: "Priya Singh",   company: "Microsoft", role: "SDE-1",               appliedOn: "11 May 2026", status: "Pending"  },
-        { id: 3, student: "Amit Kumar",    company: "Amazon",    role: "Backend Developer",   appliedOn: "12 May 2026", status: "Rejected" },
-        { id: 4, student: "Sneha Verma",   company: "Flipkart",  role: "Frontend Developer",  appliedOn: "13 May 2026", status: "Selected" },
-        { id: 5, student: "Rohan Gupta",   company: "Zomato",    role: "Full Stack Developer", appliedOn: "14 May 2026", status: "Pending"  },
-        { id: 6, student: "Pooja Yadav",   company: "Infosys",   role: "Systems Engineer",    appliedOn: "15 May 2026", status: "Selected" },
-        { id: 7, student: "Vikram Patel",  company: "TCS",       role: "Developer",           appliedOn: "16 May 2026", status: "Rejected" },
-        { id: 8, student: "Anjali Mishra", company: "Wipro",     role: "Junior Developer",    appliedOn: "17 May 2026", status: "Pending"  },
+        { id: 1, student: "Rahul Sharma",  branch: "CSE", cgpa: "8.5", email: "rahul@college.edu",  company: "Google",    role: "Software Engineer",    package: "45 LPA", appliedOn: "10 May 2026", resume: "#", status: "Selected" },
+        { id: 2, student: "Priya Singh",   branch: "IT",  cgpa: "7.9", email: "priya@college.edu",  company: "Microsoft", role: "SDE-1",                package: "40 LPA", appliedOn: "11 May 2026", resume: "#", status: "Pending"  },
+        { id: 3, student: "Amit Kumar",    branch: "CSE", cgpa: "8.1", email: "amit@college.edu",   company: "Amazon",    role: "Backend Developer",    package: "35 LPA", appliedOn: "12 May 2026", resume: "#", status: "Rejected" },
+        { id: 4, student: "Sneha Verma",   branch: "ECE", cgpa: "7.2", email: "sneha@college.edu",  company: "Flipkart",  role: "Frontend Developer",   package: "28 LPA", appliedOn: "13 May 2026", resume: "#", status: "Selected" },
+        { id: 5, student: "Rohan Gupta",   branch: "CSE", cgpa: "7.5", email: "rohan@college.edu",  company: "Zomato",    role: "Full Stack Developer", package: "18 LPA", appliedOn: "14 May 2026", resume: "#", status: "Pending"  },
+        { id: 6, student: "Pooja Yadav",   branch: "IT",  cgpa: "8.0", email: "pooja@college.edu",  company: "Infosys",   role: "Systems Engineer",     package: "8 LPA",  appliedOn: "15 May 2026", resume: "#", status: "Selected" },
+        { id: 7, student: "Vikram Patel",  branch: "CSE", cgpa: "6.8", email: "vikram@college.edu", company: "TCS",       role: "Developer",            package: "7 LPA",  appliedOn: "16 May 2026", resume: "#", status: "Rejected" },
+        { id: 8, student: "Anjali Mishra", branch: "ECE", cgpa: "7.1", email: "anjali@college.edu", company: "Wipro",     role: "Junior Developer",     package: "6 LPA",  appliedOn: "17 May 2026", resume: "#", status: "Pending"  },
       ]
     }
   },
@@ -87,6 +150,12 @@ export default {
         a.company.toLowerCase().includes(q) ||
         a.status.toLowerCase().includes(q)
       )
+    }
+  },
+
+  methods: {
+    viewDetail(application) {
+      this.selectedApplication = application
     }
   }
 }
@@ -217,6 +286,130 @@ tr:hover td {
   color: #9ca3af;
   font-size: 15px;
   padding: 40px 0;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: 18px;
+  width: 620px;
+  max-width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 28px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.modal-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.btn-close {
+  background: #f3f4f6;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  color: #374151;
+}
+
+.detail-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.avatar-lg {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.detail-top h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+  flex: 1;
+}
+
+.detail-top p {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.detail-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.detail-label {
+  color: #6b7280;
+}
+
+.detail-value {
+  color: #111827;
+  font-weight: 600;
+  text-align: right;
+  max-width: 60%;
+  word-break: break-word;
+}
+
+.website-link {
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.website-link:hover {
+  text-decoration: underline;
 }
 
 </style>
