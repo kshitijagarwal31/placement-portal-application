@@ -71,6 +71,7 @@
 <script>
 import Navbar from "../components/Navbar.vue"
 import Footer from "../components/Footer.vue"
+import axios from "axios"
 
 export default {
   name: "LoginView",
@@ -90,16 +91,35 @@ export default {
   },
 
   methods: {
-    handleLogin() {
+    async handleLogin() {
+      this.errorMessage = ""
       this.loading = true
 
-      setTimeout(() => {
-        this.loading = false
-        console.log({
+      try {
+        const res = await axios.post("http://localhost:5000/login", {
           username: this.username,
           password: this.password
         })
-      }, 1000)
+
+        localStorage.setItem("token", res.data.auth_token)
+        localStorage.setItem("user", JSON.stringify(res.data.user))
+
+        const role = res.data.user.roles[0]
+
+        if (role === "admin") {
+          this.$router.push("/admin_dashboard")
+        } else if (role === "company") {
+          this.$router.push("/company_dashboard")
+        } else if (role === "student") {
+          this.$router.push("/student_dashboard")
+        }
+
+      } catch (err) {
+        this.errorMessage = err.response.data.message
+      } finally {
+        this.loading = false
+      }
+
     }
   }
 }
@@ -130,9 +150,9 @@ export default {
 
 .login-card {
   width: 100%;
-  max-width: 430px;
+  max-width: 500px;  
   background: white;
-  padding: 40px;
+  padding: 48px;  
   border-radius: 22px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.06);
 }
@@ -143,7 +163,7 @@ export default {
 }
 
 .top-section h2 {
-  font-size: 34px;
+  font-size: 38px; 
   color: #111827;
   margin-bottom: 10px;
 }
@@ -176,10 +196,11 @@ export default {
 
 .input-group input {
   width: 100%;
-  padding: 14px;
+  padding: 15px;   
   border: 1px solid #d1d5db;
   border-radius: 10px;
   outline: none;
+  font-size: 15px;  
 }
 
 .input-group input:focus {
@@ -217,12 +238,12 @@ export default {
 
 .login-btn {
   width: 100%;
-  padding: 14px;
+  padding: 15px;   
   background: #2563eb;
   color: white;
   border: none;
   border-radius: 10px;
-  font-size: 16px;
+  font-size: 17px;  
   font-weight: 700;
   cursor: pointer;
 }
@@ -247,9 +268,4 @@ export default {
   font-weight: 700;
 }
 
-@media (max-width: 500px) {
-  .login-card {
-    padding: 30px 22px;
-  }
-}
 </style>

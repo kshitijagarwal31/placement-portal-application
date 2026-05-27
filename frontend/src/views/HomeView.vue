@@ -16,7 +16,7 @@
 
           <h1>
             Connecting Students <br />
-            With Top Recruiters
+            With Top Companies
           </h1>
 
           <p class="hero-description">
@@ -123,7 +123,7 @@
             </div>
 
             <h3>
-              Recruiter Access
+              Company Access
             </h3>
 
             <p>
@@ -187,13 +187,10 @@
 import Navbar from "../components/Navbar.vue"
 
 export default {
-
   name: "HomeView",
-
   components:{
     Navbar
   }
-
 }
 
 </script>
@@ -398,39 +395,6 @@ export default {
   border-top:1px solid #e5e7eb;
   color:#6b7280;
   background:white;
-}
-
-@media(max-width:950px){
-
-  .hero{
-    flex-direction:column;
-    text-align:center;
-  }
-
-  .hero-buttons{
-    justify-content:center;
-  }
-
-  .hero-left h1{
-    font-size:42px;
-  }
-
-}
-
-@media(max-width:700px){
-
-  .hero{
-    padding:60px 20px;
-  }
-
-  .features-section{
-    padding:20px 20px 60px;
-  }
-
-  .section-heading h2{
-    font-size:32px;
-  }
-
 }
 
 </style>

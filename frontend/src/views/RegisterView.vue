@@ -38,7 +38,7 @@
             <select v-model="role" required>
               <option disabled value="">Select role</option>
               <option value="student">Student</option>
-              <option value="recruiter">Recruiter</option>
+              <option value="company">Company</option>
             </select>
           </div>
 
@@ -88,6 +88,7 @@
 <script>
 import Navbar from "../components/Navbar.vue"
 import Footer from "../components/Footer.vue"
+import axios from "axios"
 
 export default {
   name: "RegisterView",
@@ -110,20 +111,29 @@ export default {
   },
 
   methods: {
-    handleRegister() {
+    async handleRegister() {
+      this.errorMessage = ""
       this.loading = true
 
-      setTimeout(() => {
-        this.loading = false
+      const url = this.role === "student"
+        ? "http://localhost:5000/register/student"
+        : "http://localhost:5000/register/company"
 
-        console.log({
-          fullName: this.fullName,
+      try {
+        const res = await axios.post(url, {
+          name:     this.fullName,
           username: this.username,
-          email: this.email,
-          role: this.role,
+          email:    this.email,
           password: this.password
         })
-      }, 1000)
+        alert(res.data.message)
+        this.$router.push("/login")
+      
+      } catch (err) {
+        this.errorMessage = err.response.data.message 
+      } finally {
+        this.loading = false
+      }
     }
   }
 }
@@ -154,9 +164,9 @@ export default {
 
 .register-card {
   width: 100%;
-  max-width: 430px;
+  max-width: 500px;
   background: #fff;
-  padding: 40px;
+  padding: 48px;  
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.06);
 }
@@ -167,7 +177,7 @@ export default {
 }
 
 .top-section h2 {
-  font-size: 32px;
+  font-size: 36px; 
   margin-bottom: 8px;
 }
 
@@ -199,10 +209,11 @@ export default {
 .input-group input,
 .input-group select {
   width: 100%;
-  padding: 12px;
+  padding: 14px;  
   border: 1px solid #d1d5db;
   border-radius: 8px;
   outline: none;
+  font-size: 15px;  
 }
 
 .input-group input:focus,
@@ -236,12 +247,13 @@ export default {
 
 .btn {
   width: 100%;
-  padding: 12px;
+  padding: 14px;    
   background: #2563eb;
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: bold;
+  font-size: 15px;
   cursor: pointer;
 }
 
@@ -262,34 +274,4 @@ export default {
   text-decoration: none;
 }
 
-@media (max-width: 768px) {
-  .register-card {
-    padding: 30px;
-  }
-}
-
-@media (max-width: 500px) {
-  .register-page {
-    padding: 40px 15px;
-  }
-
-  .register-card {
-    padding: 25px;
-    border-radius: 14px;
-  }
-
-  .top-section h2 {
-    font-size: 26px;
-  }
-
-  .input-group input,
-  .input-group select {
-    padding: 10px;
-    font-size: 14px;
-  }
-
-  .btn {
-    padding: 11px;
-  }
-}
 </style>
