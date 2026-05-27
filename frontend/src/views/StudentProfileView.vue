@@ -15,13 +15,16 @@
           <div class="profile-avatar">{{ form.name ? form.name.charAt(0) : '?' }}</div>
           <h2>{{ form.name || 'Your Name' }}</h2>
           <p>{{ form.username ? '@' + form.username : '@username' }}</p>
-          <p class="college">{{ form.college || 'College Name' }}</p>
         </div>
 
         <div class="preview-details">
           <div class="detail-row">
             <span class="detail-label">Email</span>
             <span class="detail-value">{{ form.email || '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">College</span>
+            <span class="detail-value">{{ form.college || '—' }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">CGPA</span>
@@ -31,10 +34,14 @@
             <span class="detail-label">Skills</span>
             <span class="detail-value">{{ form.skills || '—' }}</span>
           </div>
+          <div class="detail-row">
+            <span class="detail-label">Status</span>
+            <span class="detail-value">{{ form.status || '—' }}</span>
+          </div>
         </div>
       </div>
 
-\      <div class="section-box form-box">
+      <div class="section-box form-box">
 
         <h3 class="form-title">Personal Information</h3>
 
@@ -185,7 +192,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 700;
   margin: 0 auto 16px;
 }
@@ -198,7 +205,7 @@ export default {
 
 .college {
   color: #6b7280;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .preview-details {
@@ -222,7 +229,7 @@ export default {
 }
 
 .form-title {
-  font-size: 19px;
+  font-size: 20px;
   font-weight: 600;
   color: #111827;
   margin-bottom: 20px;
@@ -247,7 +254,7 @@ export default {
   margin-bottom: 6px;
   font-weight: 600;
   color: #374151;
-  font-size: 13.5px;
+  font-size: 14px;
 }
 
 .required {
@@ -261,7 +268,7 @@ export default {
   padding: 11px 14px;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  font-size: 14.5px;
+  font-size: 15px;
   outline: none;
 }
 
@@ -285,7 +292,7 @@ export default {
   color: white;
   border: none;
   border-radius: 10px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   margin-top: 10px;

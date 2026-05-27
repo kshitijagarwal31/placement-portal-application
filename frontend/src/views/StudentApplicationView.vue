@@ -40,7 +40,7 @@
               </span>
             </td>
             <td>
-              <button class="btn-view" @click="$router.push('/student_dashboard/application_detail')">View Details</button>
+              <button class="btn-view" @click="viewDetail(app)">View Details</button>
             </td>
           </tr>
         </tbody>
@@ -48,6 +48,69 @@
 
       <div v-if="filteredApplications.length === 0" class="empty">
         No applications found
+      </div>
+    </div>
+
+    <div v-if="selectedApp" class="modal-overlay" @click.self="selectedApp = null">
+      <div class="modal">
+
+        <div class="modal-header">
+          <h3>Application Detail</h3>
+          <button class="btn-close" @click="selectedApp = null">✕</button>
+        </div>
+
+        <div class="detail-top">
+          <div class="avatar-lg">{{ selectedApp.student_name.charAt(0) }}</div>
+          <div>
+            <h4>{{ selectedApp.student_name }}</h4>
+            <p>{{ selectedApp.company }} · {{ selectedApp.drive }}</p>
+          </div>
+          <span :class="getStatusClass(selectedApp.status)">{{ selectedApp.status }}</span>
+        </div>
+
+        <div class="detail-rows">
+          <div class="detail-row">
+            <span class="detail-label">Student Name</span>
+            <span class="detail-value">{{ selectedApp.student_name }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Branch</span>
+            <span class="detail-value">{{ selectedApp.branch }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">CGPA</span>
+            <span class="detail-value">{{ selectedApp.cgpa }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Email</span>
+            <span class="detail-value">{{ selectedApp.email }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Company</span>
+            <span class="detail-value">{{ selectedApp.company }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Role</span>
+            <span class="detail-value">{{ selectedApp.drive }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Package</span>
+            <span class="detail-value">{{ selectedApp.package }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Applied On</span>
+            <span class="detail-value">{{ selectedApp.date }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Resume</span>
+            <a :href="selectedApp.resume" target="_blank" class="resume-link">📄 View Resume</a>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-close-modal" @click="selectedApp = null">Close</button>
+        </div>
+
       </div>
     </div>
 
@@ -61,47 +124,13 @@ export default {
   data() {
     return {
       search: "",
+      selectedApp: null,
       applications: [
-        {
-          id: 1,
-          company: "Google",
-          drive: "Software Engineer Hiring",
-          date: "20 May 2026",
-          package: "45 LPA",
-          status: "Applied"
-        },
-        {
-          id: 2,
-          company: "Microsoft",
-          drive: "SDE-1 Recruitment",
-          date: "18 May 2026",
-          package: "40 LPA",
-          status: "Shortlisted"
-        },
-        {
-          id: 3,
-          company: "Amazon",
-          drive: "Backend Developer Drive",
-          date: "15 May 2026",
-          package: "35 LPA",
-          status: "Rejected"
-        },
-        {
-          id: 4,
-          company: "Flipkart",
-          drive: "Frontend Hiring",
-          date: "12 May 2026",
-          package: "28 LPA",
-          status: "Selected"
-        },
-        {
-          id: 5,
-          company: "Zomato",
-          drive: "Full Stack Developer",
-          date: "22 May 2026",
-          package: "18 LPA",
-          status: "Applied"
-        }
+        { id: 1, company: "Google",    drive: "Software Engineer Hiring", date: "20 May 2026", package: "45 LPA", status: "Applied",     student_name: "Rahul Sharma", branch: "CSE", cgpa: "8.5", email: "rahul@college.edu", resume: "#" },
+        { id: 2, company: "Microsoft", drive: "SDE-1 Recruitment",        date: "18 May 2026", package: "40 LPA", status: "Shortlisted", student_name: "Rahul Sharma", branch: "CSE", cgpa: "8.5", email: "rahul@college.edu", resume: "#" },
+        { id: 3, company: "Amazon",    drive: "Backend Developer Drive",  date: "15 May 2026", package: "35 LPA", status: "Rejected",    student_name: "Rahul Sharma", branch: "CSE", cgpa: "8.5", email: "rahul@college.edu", resume: "#" },
+        { id: 4, company: "Flipkart",  drive: "Frontend Hiring",          date: "12 May 2026", package: "28 LPA", status: "Selected",    student_name: "Rahul Sharma", branch: "CSE", cgpa: "8.5", email: "rahul@college.edu", resume: "#" },
+        { id: 5, company: "Zomato",    drive: "Full Stack Developer",     date: "22 May 2026", package: "18 LPA", status: "Applied",     student_name: "Rahul Sharma", branch: "CSE", cgpa: "8.5", email: "rahul@college.edu", resume: "#" },
       ]
     }
   },
@@ -118,14 +147,14 @@ export default {
 
   methods: {
     getStatusClass(status) {
-      if (status === 'Selected') return 'badge-selected'
+      if (status === 'Selected')    return 'badge-selected'
       if (status === 'Shortlisted') return 'badge-shortlisted'
-      if (status === 'Rejected') return 'badge-rejected'
+      if (status === 'Rejected')    return 'badge-rejected'
       return 'badge-applied'
     },
 
-    viewDetails(app) {
-      this.$router.push(`/student/application/${app.id}`)
+    viewDetail(app) {
+      this.selectedApp = app
     }
   }
 }
@@ -265,6 +294,152 @@ tr:hover td {
   color: #9ca3af;
   font-size: 15px;
   padding: 40px 0;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  border-radius: 18px;
+  width: 620px;
+  max-width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 28px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.modal-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.btn-close {
+  background: #f3f4f6;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  color: #374151;
+}
+
+.detail-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.avatar-lg {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.detail-top h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+  flex: 1;
+}
+
+.detail-top p {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.detail-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.detail-label {
+  color: #6b7280;
+}
+
+.detail-value {
+  color: #111827;
+  font-weight: 600;
+  text-align: right;
+  max-width: 60%;
+  word-break: break-word;
+}
+
+.resume-link {
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.resume-link:hover {
+  text-decoration: underline;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-close-modal {
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-close-modal:hover {
+  background: #e5e7eb;
 }
 
 </style>
