@@ -116,7 +116,7 @@
 
       </div>
 
-      <button class="logout-btn">
+      <button class="logout-btn" @click="logout">
         Logout
       </button>
 
@@ -131,16 +131,22 @@
 export default {
 
   name: "Sidebar",
-
   props: {
-
     role: {
-
       type: String,
       required: true
-
     }
+  }, 
 
+  methods: {
+    logout() {
+      
+      localStorage.removeItem("token")
+      localStorage.removeItem("role")
+      localStorage.removeItem("user")
+
+      this.$router.push("/login")
+    }
   }
 
 }
