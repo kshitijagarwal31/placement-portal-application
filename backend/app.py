@@ -4,6 +4,7 @@ from config import LocalDevelopmentConfig
 from flask_security import Security
 from flask_security.utils import hash_password
 from user_datastore import user_datastore 
+from flask_cors import CORS
 
 
 from routes.auth_routes import auth_bp
@@ -17,6 +18,7 @@ def create_app():
     app.config.from_object(LocalDevelopmentConfig)
 
     db.init_app(app)
+    CORS(app)
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)

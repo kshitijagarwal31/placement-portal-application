@@ -12,81 +12,155 @@ admin_bp = Blueprint("admin_bp", __name__)
 @roles_required("admin")
 def admin_dashboard_data():
 
-    stats = {
-        "total_students": User.query.join(User.roles).filter(Role.name == "student").count(),
-        "total_companies": User.query.join(User.roles).filter(Role.name == "company").count(),
-        "total_placement_drives": PlacementDrive.query.count(),
-        "total_applications": Application.query.count()
-    }
-
-    students = User.query.join(User.roles).filter(Role.name == "student").all()
-    students_list = [
-        {
-            "id": s.id,
-            "name": s.name,
-            "email": s.email,
-            "is_active": s.is_active
-        } for s in students
-    ]
-
-    companies = User.query.join(User.roles).filter(
-        Role.name == "company",
-        User.is_approved == True
-    ).all()
-    companies_list = [
-        {
-            "id": c.id,
-            "name": c.name,
-            "email": c.email,
-            "is_active": c.is_active
-        } for c in companies
-    ]
+    total_students     = User.query.join(User.roles).filter(Role.name == "student").count()
+    total_companies    = User.query.join(User.roles).filter(Role.name == "company", User.is_approved == True).count()
+    total_drives       = PlacementDrive.query.filter_by(status="Active").count()
+    total_applications = Application.query.count()
+    total_placements   = Application.query.filter_by(status="Selected").count()
+    placement_rate     = round((total_placements / total_students) * 100) if total_students > 0 else 0
 
     company_requests = User.query.join(User.roles).filter(
         Role.name == "company",
         User.is_approved == False
     ).all()
-    company_requests_list = [
+
+    pending_companies = [
         {
             "id": c.id,
             "name": c.name,
-            "email": c.email
-        } for c in company_requests
+            "industry": c.company_profile.industry if c.company_profile else "N/A",
+            "address": c.company_profile.address if c.company_profile else "N/A",
+        }
+        for c in company_requests
     ]
 
-    placement_drives = PlacementDrive.query.filter_by(status="Active").all()
-    drives_list = [
+    pending_drive_list = PlacementDrive.query.filter_by(status="Pending").all()
+
+    pending_drives = [
         {
             "id": d.id,
             "job_title": d.job_title,
             "company_name": d.company.name if d.company else "N/A",
             "start_date": str(d.start_date),
-            "end_date": str(d.last_date)
-        } for d in placement_drives
+        }
+        for d in pending_drive_list
     ]
 
+    return jsonify({
+        "stats": {
+            "total_students":     total_students,
+            "total_companies":    total_companies,
+            "total_drives":       total_drives,
+            "total_applications": total_applications,
+            "total_placements":   total_placements,
+            "placement_rate":     placement_rate,
+        },
+        "pending_companies": pending_companies,
+        "pending_drives":    pending_drives,
+    }), 200
+
+
+@admin_bp.route("/admin/students", methods=["GET"])
+@auth_required("token")
+@roles_required("admin")
+def admin_students():
+    students = User.query.join(User.roles).filter(Role.name == "student").all()
+    students_list = []
+    for s in students:
+        profile = s.student_profile
+        students_list.append({
+            "id": s.id,
+            "name": s.name,
+            "email": s.email,
+            "username": s.username,
+            "is_active": s.active,
+            "cgpa": profile.cgpa if profile else "N/A",
+            "college": profile.college_name if profile else "N/A",
+            "skills": profile.skills if profile else "N/A",
+            "resume": profile.resume if profile else ""
+        })
+    return jsonify({"students": students_list}), 200
+
+
+@admin_bp.route("/admin/companies", methods=["GET"])
+@auth_required("token")
+@roles_required("admin")
+def admin_companies():
+    companies = User.query.join(User.roles).filter(
+        Role.name == "company",
+        User.is_approved == True
+    ).all()
+    companies_list = []
+    for c in companies:
+        profile = c.company_profile
+        companies_list.append({
+            "id": c.id,
+            "name": c.name,
+            "email": c.email,
+            "is_active": c.active,
+            "industry": profile.industry if profile else "N/A",
+            "address": profile.address if profile else "N/A",
+            "website": profile.website_link if profile else "N/A",
+            "contact": profile.hr_contact_number if profile else "N/A",
+            "description": profile.description if profile else "N/A"
+        })
+
+    company_requests = User.query.join(User.roles).filter(
+        Role.name == "company",
+        User.is_approved == False
+    ).all()
+    company_requests_list = []
+    for c in company_requests:
+        profile = c.company_profile
+        company_requests_list.append({
+            "id": c.id,
+            "name": c.name,
+            "email": c.email,
+            "industry": profile.industry if profile else "N/A",
+            "address": profile.address if profile else "N/A",
+            "website": profile.website_link if profile else "N/A",
+            "contact": profile.hr_contact_number if profile else "N/A",
+            "description": profile.description if profile else "N/A"
+        })
+
+    return jsonify({
+        "companies": companies_list,
+        "company_requests": company_requests_list
+    }), 200
+
+
+@admin_bp.route("/admin/placement_drives", methods=["GET"])
+@auth_required("token")
+@roles_required("admin")
+def admin_placement_drives():
+    active_drives = PlacementDrive.query.filter_by(status="Active").all()
+    pending_drives = PlacementDrive.query.filter_by(status="Pending").all()
     closed_drives = PlacementDrive.query.filter_by(status="Closed").all()
-    closed_drives_list = [
-        {
+
+    def drive_to_dict(d):
+        return {
             "id": d.id,
             "job_title": d.job_title,
             "company_name": d.company.name if d.company else "N/A",
+            "company_id": d.company_id,
+            "salary": d.salary,
             "start_date": str(d.start_date),
-            "end_date": str(d.last_date)
-        } for d in closed_drives
-    ]
+            "end_date": str(d.last_date),
+            "skills_required": d.skills_required,
+            "status": d.status
+        }
 
-    drive_requests = PlacementDrive.query.filter_by(status="Pending").all()
-    drive_requests_list = [
-        {
-            "id": d.id,
-            "job_title": d.job_title,
-            "company_name": d.company.name if d.company else "N/A",
-            "start_date": str(d.start_date),
-            "end_date": str(d.last_date)
-        } for d in drive_requests
-    ]
+    return jsonify({
+        "active_drives": [drive_to_dict(d) for d in active_drives],
+        "pending_drives": [drive_to_dict(d) for d in pending_drives],
+        "closed_drives": [drive_to_dict(d) for d in closed_drives]
+    }), 200
 
+
+@admin_bp.route("/admin/applications", methods=["GET"])
+@auth_required("token")
+@roles_required("admin")
+def admin_applications():
     applications = Application.query.all()
     applications_list = [
         {
@@ -98,26 +172,15 @@ def admin_dashboard_data():
             "apply_date": str(a.apply_date)
         } for a in applications
     ]
+    return jsonify({"applications": applications_list}), 200
 
-    return jsonify({
-        "stats": stats,
-        "students": students_list,
-        "companies": companies_list,
-        "company_requests": company_requests_list,
-        "placement_drives": drives_list,
-        "closed_drives": closed_drives_list,
-        "drive_requests": drive_requests_list,
-        "applications": applications_list
-    })
-    
-    
+
 @admin_bp.route("/admin/company/approve/<int:id>", methods=["POST"])
 @auth_required("token")
 @roles_required("admin")
 def approve_company(id):
     company = User.query.join(User.roles).filter(
-        User.id == id,
-        Role.name == "company"
+        User.id == id, Role.name == "company"
     ).first()
     if not company:
         return {"message": "Company not found"}, 404
@@ -175,13 +238,10 @@ def blacklist_student(student_id):
     user = User.query.get(student_id)
     if not user:
         return jsonify({"message": "Student not found"}), 404
-        
     user.active = False
-        
     student = StudentProfile.query.filter_by(user_id=student_id).first()
     if student:
         student.is_active = False
-        
     db.session.commit()
     return jsonify({"message": "Student blacklisted ✅"})
 
@@ -193,13 +253,10 @@ def unblacklist_student(student_id):
     user = User.query.get(student_id)
     if not user:
         return jsonify({"message": "Student not found"}), 404
-        
     user.active = True
-        
     student = StudentProfile.query.filter_by(user_id=student_id).first()
     if student:
         student.is_active = True
-        
     db.session.commit()
     return jsonify({"message": "Student unblacklisted ✅"})
 
@@ -214,7 +271,7 @@ def approve_drive(drive_id):
     drive.status = "Active"    
     drive.is_approved = True
     db.session.commit()
-    return jsonify({"message": f"Drive approved ✅"})
+    return jsonify({"message": "Drive approved ✅"})
 
 
 @admin_bp.route("/admin/placement_drive/reject/<int:drive_id>", methods=["POST"])
@@ -226,147 +283,4 @@ def reject_drive(drive_id):
         return jsonify({"message": "Drive not found"}), 404
     drive.status = "Rejected"
     db.session.commit()
-    return jsonify({"message": f"Drive rejected ✅"})
-
-
-@admin_bp.route("/admin/company_detail/<int:company_id>", methods=["GET"])
-@auth_required("token")
-@roles_required("admin")
-def admin_company_detail(company_id):
-    company = User.query.get(company_id)
-    if not company:
-        return jsonify({"message": "Company not found"}), 404
-
-    profile = CompanyProfile.query.filter_by(user_id=company_id).first()
-    drives = PlacementDrive.query.filter_by(company_id=company_id).all()
-
-    total  = len(drives)
-    active = sum(1 for d in drives if d.status == "Active")
-    closed = sum(1 for d in drives if d.status == "Closed")
-
-    return jsonify({
-        "name"       : company.name,
-        "email"      : company.email,
-        "is_active"  : company.is_active,
-        "industry"   : profile.industry if profile else "N/A",
-        "description": profile.description if profile else "N/A",
-        "contact"    : profile.hr_contact_number if profile else "N/A",
-        "address"    : profile.address if profile else "N/A",
-        "website_link": profile.website_link if profile else "N/A",
-        "stats": {
-            "total_drives" : total,
-            "active_drives": active,
-            "closed_drives": closed
-        },
-        "drives": [
-            {
-                "id"        : d.id,
-                "job_title" : d.job_title,
-                "start_date": str(d.start_date),
-                "end_date"  : str(d.last_date),
-                "status"    : d.status
-            } for d in drives
-        ]
-    })
-    
-    
-@admin_bp.route("/admin/student_detail/<int:student_id>", methods=["GET"])
-@auth_required("token")
-@roles_required("admin")
-def admin_student_detail(student_id):
-    student = User.query.get(student_id)
-    if not student:
-        return jsonify({"message": "Student not found"}), 404
-
-    profile = student.student_profile
-    applications = student.applications
-
-    total = len(applications)
-    shortlisted = sum(1 for a in applications if a.status == "Shortlisted")
-    rejected = sum(1 for a in applications if a.status == "Rejected")
-
-    return jsonify({
-        "name": student.name,
-        "email": student.email,
-        "college_name": profile.college_name if profile else "N/A",
-        "cgpa": profile.cgpa if profile else "N/A",
-        "skills": profile.skills if profile else "N/A",
-        "bio": profile.bio if profile else "N/A",
-        "is_active": student.active,
-        "stats": {
-            "total": total,
-            "shortlisted": shortlisted,
-            "rejected": rejected
-        },
-        "applications": [
-            {
-                "id": a.id,
-                "drive": a.placement_drive.job_title if a.placement_drive else "N/A",
-                "company": a.placement_drive.company.name if a.placement_drive and a.placement_drive.company else "N/A",
-                "date": str(a.apply_date),
-                "status": a.status
-            } for a in applications
-        ]
-    })
-    
-    
-@admin_bp.route("/admin/drive_detail/<int:drive_id>", methods=["GET"])
-@auth_required("token")
-@roles_required("admin")
-def admin_drive_detail(drive_id):
-    drive = PlacementDrive.query.get(drive_id)
-    if not drive:
-        return jsonify({"message": "Drive not found"}), 404
-
-    apps = drive.applications
-    return jsonify({
-        "job_title"         : drive.job_title,
-        "company"           : drive.company.name if drive.company else "N/A",
-        "salary"            : drive.salary,
-        "start_date"        : str(drive.start_date),
-        "end_date"          : str(drive.last_date),
-        "skills_required"   : drive.skills_required,
-        "status"            : drive.status,
-        "description"       : drive.job_description,
-        "total_applications": len(apps),
-        "shortlisted"       : len([a for a in apps if a.status == "Shortlisted"]),
-        "selected"          : len([a for a in apps if a.status == "Selected"]),
-        "rejected"          : len([a for a in apps if a.status == "Rejected"]),
-        "applications"      : [
-            {
-                "id"          : a.id,
-                "student_name": a.student.name if a.student else "N/A",
-                "apply_date"  : str(a.apply_date),
-                "status"      : a.status
-            } for a in apps
-        ]
-    })
-    
-    
-@admin_bp.route("/admin/application_detail/<int:app_id>", methods=["GET"])
-@auth_required("token")
-@roles_required("admin")
-def admin_application_detail(app_id):
-    app_data = Application.query.get(app_id)
-    if not app_data:
-        return jsonify({"message": "Application not found"}), 404
-
-    drive = app_data.placement_drive
-    return jsonify({
-        "id"            : app_data.id,
-        "status"        : app_data.status,
-        "apply_date"    : str(app_data.apply_date),
-        "interview_date": str(app_data.interview_date) if app_data.interview_date else "",
-        "interview_mode": app_data.interview_mode or "N/A",
-        "interview_location": app_data.interview_location or "",
-        "feedback"      : app_data.feedback or "N/A",
-        "offer_letter"  : app_data.offer_letter or "",
-        "resume": app_data.student.student_profile.resume if app_data.student and app_data.student.student_profile else "",
-        "job_title"     : drive.job_title if drive else "N/A",
-        "company"       : drive.company.name if drive and drive.company else "N/A",
-        "salary"        : drive.salary if drive else "N/A",
-        "skills_required": drive.skills_required if drive else "N/A",
-        "description"   : drive.job_description if drive else "N/A",
-        "start_date"    : str(drive.start_date) if drive else "",
-        "end_date"      : str(drive.last_date) if drive else ""
-    })
+    return jsonify({"message": "Drive rejected ✅"})
