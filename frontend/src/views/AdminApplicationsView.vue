@@ -30,18 +30,17 @@
         <tbody>
           <tr v-for="(application, index) in filteredApplications" :key="application.id">
             <td>{{ index + 1 }}</td>
-            <td>{{ application.student }}</td>
-            <td>{{ application.company }}</td>
-            <td>{{ application.role }}</td>
-            <td>{{ application.appliedOn }}</td>
+            <td>{{ application.student_name }}</td>
+            <td>{{ application.company_name }}</td>
+            <td>{{ application.drive }}</td>
+            <td>{{ application.apply_date }}</td>
             <td>
               <span :class="
-                application.status === 'Selected' ? 'badge-selected' :
-                application.status === 'Pending'  ? 'badge-pending'  :
+                application.status === 'Selected'    ? 'badge-selected'    :
+                application.status === 'Pending'     ? 'badge-pending'     :
+                application.status === 'Shortlisted' ? 'badge-shortlisted' :
                 'badge-rejected'
-              ">
-                {{ application.status }}
-              </span>
+              ">{{ application.status }}</span>
             </td>
             <td>
               <button class="btn-view" @click="viewDetail(application)">View</button>
@@ -64,14 +63,15 @@
         </div>
 
         <div class="detail-top">
-          <div class="avatar-lg">{{ selectedApplication.student.charAt(0) }}</div>
+          <div class="avatar-lg">{{ selectedApplication.student_name.charAt(0) }}</div>
           <div>
-            <h4>{{ selectedApplication.student }}</h4>
-            <p>{{ selectedApplication.company }} · {{ selectedApplication.role }}</p>
+            <h4>{{ selectedApplication.student_name }}</h4>
+            <p>{{ selectedApplication.company_name }} · {{ selectedApplication.drive }}</p>
           </div>
           <span :class="
-            selectedApplication.status === 'Selected' ? 'badge-selected' :
-            selectedApplication.status === 'Pending'  ? 'badge-pending'  :
+            selectedApplication.status === 'Selected'    ? 'badge-selected'    :
+            selectedApplication.status === 'Pending'     ? 'badge-pending'     :
+            selectedApplication.status === 'Shortlisted' ? 'badge-shortlisted' :
             'badge-rejected'
           ">{{ selectedApplication.status }}</span>
         </div>
@@ -79,39 +79,23 @@
         <div class="detail-rows">
           <div class="detail-row">
             <span class="detail-label">Student Name</span>
-            <span class="detail-value">{{ selectedApplication.student }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Branch</span>
-            <span class="detail-value">{{ selectedApplication.branch }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">CGPA</span>
-            <span class="detail-value">{{ selectedApplication.cgpa }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Email</span>
-            <span class="detail-value">{{ selectedApplication.email }}</span>
+            <span class="detail-value">{{ selectedApplication.student_name }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Company</span>
-            <span class="detail-value">{{ selectedApplication.company }}</span>
+            <span class="detail-value">{{ selectedApplication.company_name }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Role</span>
-            <span class="detail-value">{{ selectedApplication.role }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Package</span>
-            <span class="detail-value">{{ selectedApplication.package }}</span>
+            <span class="detail-value">{{ selectedApplication.drive }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Applied On</span>
-            <span class="detail-value">{{ selectedApplication.appliedOn }}</span>
+            <span class="detail-value">{{ selectedApplication.apply_date }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Resume</span>
-            <a :href="selectedApplication.resume" target="_blank" class="website-link">📄 View Resume</a>
+            <span class="detail-label">Status</span>
+            <span class="detail-value">{{ selectedApplication.status }}</span>
           </div>
         </div>
 
@@ -122,6 +106,8 @@
 </template>
 
 <script>
+import axios from "axios"
+
 export default {
   name: "AdminApplicationsView",
 
@@ -129,25 +115,24 @@ export default {
     return {
       search: "",
       selectedApplication: null,
-      applications: [
-        { id: 1, student: "Rahul Sharma",  branch: "CSE", cgpa: "8.5", email: "rahul@college.edu",  company: "Google",    role: "Software Engineer",    package: "45 LPA", appliedOn: "10 May 2026", resume: "#", status: "Selected" },
-        { id: 2, student: "Priya Singh",   branch: "IT",  cgpa: "7.9", email: "priya@college.edu",  company: "Microsoft", role: "SDE-1",                package: "40 LPA", appliedOn: "11 May 2026", resume: "#", status: "Pending"  },
-        { id: 3, student: "Amit Kumar",    branch: "CSE", cgpa: "8.1", email: "amit@college.edu",   company: "Amazon",    role: "Backend Developer",    package: "35 LPA", appliedOn: "12 May 2026", resume: "#", status: "Rejected" },
-        { id: 4, student: "Sneha Verma",   branch: "ECE", cgpa: "7.2", email: "sneha@college.edu",  company: "Flipkart",  role: "Frontend Developer",   package: "28 LPA", appliedOn: "13 May 2026", resume: "#", status: "Selected" },
-        { id: 5, student: "Rohan Gupta",   branch: "CSE", cgpa: "7.5", email: "rohan@college.edu",  company: "Zomato",    role: "Full Stack Developer", package: "18 LPA", appliedOn: "14 May 2026", resume: "#", status: "Pending"  },
-        { id: 6, student: "Pooja Yadav",   branch: "IT",  cgpa: "8.0", email: "pooja@college.edu",  company: "Infosys",   role: "Systems Engineer",     package: "8 LPA",  appliedOn: "15 May 2026", resume: "#", status: "Selected" },
-        { id: 7, student: "Vikram Patel",  branch: "CSE", cgpa: "6.8", email: "vikram@college.edu", company: "TCS",       role: "Developer",            package: "7 LPA",  appliedOn: "16 May 2026", resume: "#", status: "Rejected" },
-        { id: 8, student: "Anjali Mishra", branch: "ECE", cgpa: "7.1", email: "anjali@college.edu", company: "Wipro",     role: "Junior Developer",     package: "6 LPA",  appliedOn: "17 May 2026", resume: "#", status: "Pending"  },
-      ]
+      applications: []
     }
+  },
+
+  async mounted() {
+    const token = localStorage.getItem("token")
+    const res = await axios.get("http://localhost:5000/admin/applications", {
+      headers: { "Authentication-Token": token }
+    })
+    this.applications = res.data.applications
   },
 
   computed: {
     filteredApplications() {
       const q = this.search.toLowerCase()
       return this.applications.filter(a =>
-        a.student.toLowerCase().includes(q) ||
-        a.company.toLowerCase().includes(q) ||
+        a.student_name.toLowerCase().includes(q) ||
+        a.company_name.toLowerCase().includes(q) ||
         a.status.toLowerCase().includes(q)
       )
     }

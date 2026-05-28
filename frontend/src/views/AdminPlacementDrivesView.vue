@@ -21,7 +21,7 @@
             <th>S.No</th>
             <th>Company</th>
             <th>Role</th>
-            <th>Date</th>
+            <th>Last Date</th>
             <th>Package</th>
             <th>Status</th>
             <th>Action</th>
@@ -30,38 +30,30 @@
         <tbody>
           <tr v-for="(drive, index) in filteredDrives" :key="drive.id">
             <td>{{ index + 1 }}</td>
-            <td>{{ drive.company }}</td>
-            <td>{{ drive.role }}</td>
-            <td>{{ drive.date }}</td>
-            <td>{{ drive.package }}</td>
+            <td>{{ drive.company_name }}</td>
+            <td>{{ drive.job_title }}</td>
+            <td>{{ drive.end_date }}</td>
+            <td>{{ drive.salary }}</td>
             <td>
               <span :class="
-                drive.status === 'Pending'   ? 'badge-pending'   :
-                drive.status === 'Active'    ? 'badge-active'    :
-                drive.status === 'Rejected'  ? 'badge-rejected'  :
-                drive.status === 'Upcoming'  ? 'badge-upcoming'  :
-                drive.status === 'Ongoing'   ? 'badge-ongoing'   :
+                drive.status === 'Pending'  ? 'badge-pending'  :
+                drive.status === 'Active'   ? 'badge-active'   :
+                drive.status === 'Rejected' ? 'badge-rejected' :
                 'badge-completed'
-              ">
-                {{ drive.status }}
-              </span>
+              ">{{ drive.status }}</span>
             </td>
             <td>
               <div class="actions">
-
                 <template v-if="drive.status === 'Pending'">
                   <button class="btn-approve" @click="approveDrive(drive)">Approve</button>
                   <button class="btn-reject"  @click="rejectDrive(drive)">Reject</button>
                 </template>
-
-                <template v-if="drive.status === 'Active' || drive.status === 'Upcoming' || drive.status === 'Ongoing' || drive.status === 'Completed'">
+                <template v-if="drive.status === 'Active' || drive.status === 'Closed'">
                   <button class="btn-view" @click="viewDetail(drive)">View Detail</button>
                 </template>
-
                 <template v-if="drive.status === 'Rejected'">
                   <span class="text-rejected">—</span>
                 </template>
-
               </div>
             </td>
           </tr>
@@ -82,17 +74,15 @@
         </div>
 
         <div class="detail-top">
-          <div class="avatar-lg">{{ selectedDrive.company.charAt(0) }}</div>
+          <div class="avatar-lg">{{ selectedDrive.company_name.charAt(0) }}</div>
           <div>
-            <h4>{{ selectedDrive.company }}</h4>
-            <p>{{ selectedDrive.role }} · {{ selectedDrive.package }}</p>
+            <h4>{{ selectedDrive.company_name }}</h4>
+            <p>{{ selectedDrive.job_title }} · {{ selectedDrive.salary }}</p>
           </div>
           <span :class="
-            selectedDrive.status === 'Upcoming'  ? 'badge-upcoming'  :
-            selectedDrive.status === 'Ongoing'   ? 'badge-ongoing'   :
-            selectedDrive.status === 'Completed' ? 'badge-completed' :
-            selectedDrive.status === 'Active'    ? 'badge-active'    :
-            selectedDrive.status === 'Pending'   ? 'badge-pending'   :
+            selectedDrive.status === 'Active'   ? 'badge-active'   :
+            selectedDrive.status === 'Pending'  ? 'badge-pending'  :
+            selectedDrive.status === 'Closed'   ? 'badge-completed':
             'badge-rejected'
           ">{{ selectedDrive.status }}</span>
         </div>
@@ -100,31 +90,31 @@
         <div class="detail-rows">
           <div class="detail-row">
             <span class="detail-label">Company</span>
-            <span class="detail-value">{{ selectedDrive.company }}</span>
+            <span class="detail-value">{{ selectedDrive.company_name }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Role</span>
-            <span class="detail-value">{{ selectedDrive.role }}</span>
+            <span class="detail-value">{{ selectedDrive.job_title }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Package</span>
-            <span class="detail-value">{{ selectedDrive.package }}</span>
+            <span class="detail-value">{{ selectedDrive.salary }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Drive Date</span>
-            <span class="detail-value">{{ selectedDrive.date }}</span>
+            <span class="detail-label">Start Date</span>
+            <span class="detail-value">{{ selectedDrive.start_date }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Eligibility</span>
-            <span class="detail-value">{{ selectedDrive.eligibility }}</span>
+            <span class="detail-label">Last Date</span>
+            <span class="detail-value">{{ selectedDrive.end_date }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Location</span>
-            <span class="detail-value">{{ selectedDrive.location }}</span>
+            <span class="detail-label">Skills Required</span>
+            <span class="detail-value">{{ selectedDrive.skills_required }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Description</span>
-            <span class="detail-value">{{ selectedDrive.description }}</span>
+            <span class="detail-label">Status</span>
+            <span class="detail-value">{{ selectedDrive.status }}</span>
           </div>
         </div>
 
@@ -144,8 +134,7 @@
                 <tr>
                   <th>S.No</th>
                   <th>Student Name</th>
-                  <th>Branch</th>
-                  <th>CGPA</th>
+                  <th>Apply Date</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -153,13 +142,12 @@
                 <tr v-for="(app, index) in driveApplications" :key="app.id">
                   <td>{{ index + 1 }}</td>
                   <td>{{ app.student_name }}</td>
-                  <td>{{ app.branch }}</td>
-                  <td>{{ app.cgpa }}</td>
+                  <td>{{ app.apply_date }}</td>
                   <td>
                     <span :class="
-                      app.status === 'Applied'   ? 'status-applied'   :
-                      app.status === 'Shortlisted' ? 'status-shortlisted' :
-                      app.status === 'Selected'  ? 'status-selected'  :
+                      app.status === 'Pending'     ? 'status-applied'      :
+                      app.status === 'Shortlisted' ? 'status-shortlisted'  :
+                      app.status === 'Selected'    ? 'status-selected'     :
                       'status-rejected'
                     ">{{ app.status }}</span>
                   </td>
@@ -176,6 +164,8 @@
 </template>
 
 <script>
+import axios from "axios"
+
 export default {
   name: "AdminPlacementDrivesView",
 
@@ -183,44 +173,33 @@ export default {
     return {
       search: "",
       selectedDrive: null,
-
-      drives: [
-        { id: 1, company: "Google",    role: "Software Engineer",    date: "25 May 2026", package: "45 LPA", status: "Pending",   eligibility: "8.0+ CGPA, CSE/IT",       location: "Bangalore",  description: "SWE role at Google India." },
-        { id: 2, company: "Microsoft", role: "SDE-1",                date: "28 May 2026", package: "40 LPA", status: "Pending",   eligibility: "7.5+ CGPA, CSE/IT/ECE",   location: "Hyderabad",  description: "Software Dev Engineer role." },
-        { id: 3, company: "Amazon",    role: "Backend Developer",    date: "20 May 2026", package: "35 LPA", status: "Ongoing",   eligibility: "7.0+ CGPA, All branches",  location: "Bangalore",  description: "Backend dev at Amazon India." },
-        { id: 4, company: "Infosys",   role: "Systems Engineer",     date: "15 May 2026", package: "8 LPA",  status: "Completed", eligibility: "6.5+ CGPA, All branches",  location: "Pune",       description: "Systems Engineer program." },
-        { id: 5, company: "TCS",       role: "Developer",            date: "10 May 2026", package: "7 LPA",  status: "Completed", eligibility: "6.0+ CGPA, All branches",  location: "Mumbai",     description: "TCS NextStep developer role." },
-        { id: 6, company: "Flipkart",  role: "Frontend Developer",   date: "30 May 2026", package: "28 LPA", status: "Upcoming",  eligibility: "7.5+ CGPA, CSE/IT",       location: "Bangalore",  description: "Frontend dev at Flipkart." },
-        { id: 7, company: "Zomato",    role: "Full Stack Developer", date: "18 May 2026", package: "18 LPA", status: "Pending",   eligibility: "7.0+ CGPA, CSE/IT/ECE",   location: "Gurgaon",    description: "Full stack role at Zomato." },
-        { id: 8, company: "Wipro",     role: "Junior Developer",     date: "12 May 2026", package: "6 LPA",  status: "Completed", eligibility: "6.0+ CGPA, All branches",  location: "Delhi",      description: "Junior dev at Wipro Technologies." },
-      ],
-
-      applications: [
-        { id: 1, drive_id: 3, student_name: "Rahul Sharma",   branch: "CSE",  cgpa: "8.5", status: "Shortlisted" },
-        { id: 2, drive_id: 3, student_name: "Priya Singh",    branch: "IT",   cgpa: "7.9", status: "Applied"     },
-        { id: 3, drive_id: 3, student_name: "Amit Kumar",     branch: "CSE",  cgpa: "8.1", status: "Selected"    },
-        { id: 4, drive_id: 4, student_name: "Sneha Verma",    branch: "ECE",  cgpa: "7.2", status: "Selected"    },
-        { id: 5, drive_id: 4, student_name: "Rohit Gupta",    branch: "CSE",  cgpa: "6.8", status: "Rejected"    },
-        { id: 6, drive_id: 5, student_name: "Anjali Mishra",  branch: "IT",   cgpa: "7.5", status: "Selected"    },
-        { id: 7, drive_id: 6, student_name: "Vikas Yadav",    branch: "CSE",  cgpa: "8.0", status: "Applied"     },
-        { id: 8, drive_id: 8, student_name: "Pooja Tiwari",   branch: "CSE",  cgpa: "7.1", status: "Selected"    },
-        { id: 9, drive_id: 8, student_name: "Karan Joshi",    branch: "IT",   cgpa: "6.5", status: "Rejected"    },
-      ]
+      drives: [],
     }
+  },
+
+  async mounted() {
+    const token = localStorage.getItem("token")
+    const res = await axios.get("http://localhost:5000/admin/placement_drives", {
+      headers: { "Authentication-Token": token }
+    })
+    const active  = res.data.active_drives
+    const pending = res.data.pending_drives
+    const closed  = res.data.closed_drives
+    this.drives = [...active, ...pending, ...closed]
   },
 
   computed: {
     filteredDrives() {
       const q = this.search.toLowerCase()
       return this.drives.filter(d =>
-        d.company.toLowerCase().includes(q) ||
-        d.role.toLowerCase().includes(q)    ||
+        d.company_name.toLowerCase().includes(q) ||
+        d.job_title.toLowerCase().includes(q)    ||
         d.status.toLowerCase().includes(q)
       )
     },
     driveApplications() {
       if (!this.selectedDrive) return []
-      return this.applications.filter(a => a.drive_id === this.selectedDrive.id)
+      return this.selectedDrive.applications || []
     }
   },
 
@@ -228,11 +207,21 @@ export default {
     viewDetail(drive) {
       this.selectedDrive = drive
     },
-    approveDrive(drive) {
-      drive.status = 'Active'
+
+    async approveDrive(drive) {
+      const token = localStorage.getItem("token")
+      await axios.post(`http://localhost:5000/admin/placement_drive/approve/${drive.id}`, {}, {
+        headers: { "Authentication-Token": token }
+      })
+      drive.status = "Active"
     },
-    rejectDrive(drive) {
-      drive.status = 'Rejected'
+
+    async rejectDrive(drive) {
+      const token = localStorage.getItem("token")
+      await axios.post(`http://localhost:5000/admin/placement_drive/reject/${drive.id}`, {}, {
+        headers: { "Authentication-Token": token }
+      })
+      drive.status = "Rejected"
     }
   }
 }

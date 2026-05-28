@@ -10,7 +10,7 @@
         v-model="search"
         class="search-input"
         type="text"
-        placeholder="Search by name, email, branch or status..."
+        placeholder="Search by name or email..."
       />
     </div>
 
@@ -21,8 +21,6 @@
             <th>S.No</th>
             <th>Name</th>
             <th>Email</th>
-            <th>Branch</th>
-            <th>CGPA</th>
             <th>Status</th>
             <th>Action</th>
           </tr>
@@ -32,8 +30,6 @@
             <td>{{ index + 1 }}</td>
             <td>{{ student.name }}</td>
             <td>{{ student.email }}</td>
-            <td>{{ student.branch }}</td>
-            <td>{{ student.cgpa }}</td>
             <td>
               <span :class="student.is_active ? 'badge-active' : 'badge-blacklisted'">
                 {{ student.is_active ? 'Active' : 'Blacklisted' }}
@@ -50,7 +46,7 @@
                 <button
                   v-else
                   class="btn-view"
-                  @click="student.is_active = true"
+                  @click="unblacklistStudent(student)"
                 >Unblacklist</button>
               </div>
             </td>
@@ -75,7 +71,7 @@
           <div class="avatar-lg">{{ selectedStudent.name.charAt(0) }}</div>
           <div>
             <h4>{{ selectedStudent.name }}</h4>
-            <p>{{ selectedStudent.branch }} · CGPA {{ selectedStudent.cgpa }}</p>
+            <p>{{ selectedStudent.college }} · CGPA {{ selectedStudent.cgpa }}</p>
           </div>
           <span :class="selectedStudent.is_active ? 'badge-active' : 'badge-blacklisted'">
             {{ selectedStudent.is_active ? 'Active' : 'Blacklisted' }}
@@ -84,7 +80,7 @@
 
         <div class="detail-rows">
           <div class="detail-row">
-            <span class="detail-label">Full Name</span>
+            <span class="detail-label">Name</span>
             <span class="detail-value">{{ selectedStudent.name }}</span>
           </div>
           <div class="detail-row">
@@ -94,10 +90,6 @@
           <div class="detail-row">
             <span class="detail-label">Email</span>
             <span class="detail-value">{{ selectedStudent.email }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Branch</span>
-            <span class="detail-value">{{ selectedStudent.branch }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">CGPA</span>
@@ -142,8 +134,8 @@
                 <tr v-for="(app, index) in studentApplications" :key="app.id">
                   <td>{{ index + 1 }}</td>
                   <td>{{ app.company }}</td>
-                  <td>{{ app.role }}</td>
-                  <td>{{ app.apply_date }}</td>
+                  <td>{{ app.drive }}</td>
+                  <td>{{ app.date }}</td>
                   <td>
                     <span :class="[
                       'status-badge',
@@ -166,6 +158,8 @@
 </template>
 
 <script>
+import axios from "axios"
+
 export default {
   name: "AdminStudentsView",
 
@@ -173,42 +167,31 @@ export default {
     return {
       search: "",
       selectedStudent: null,
-      students: [
-        { id: 1, name: "Rahul Sharma",  username: "rahul123",  email: "rahul@college.com",  branch: "CSE", cgpa: "8.9", college: "IIT Delhi",   skills: "Vue, Python, Java",  resume: "#", is_active: true  },
-        { id: 2, name: "Priya Singh",   username: "priya456",  email: "priya@college.com",  branch: "ECE", cgpa: "7.5", college: "NIT Trichy",  skills: "React, CSS, HTML",   resume: "#", is_active: true  },
-        { id: 3, name: "Amit Kumar",    username: "amit789",   email: "amit@college.com",   branch: "ME",  cgpa: "8.1", college: "VIT Vellore", skills: "Node.js, MongoDB",   resume: "#", is_active: false },
-        { id: 4, name: "Sneha Verma",   username: "sneha321",  email: "sneha@college.com",  branch: "CSE", cgpa: "9.2", college: "IIT Bombay",  skills: "Java, Spring Boot",  resume: "#", is_active: true  },
-        { id: 5, name: "Rohan Gupta",   username: "rohan654",  email: "rohan@college.com",  branch: "IT",  cgpa: "7.8", college: "BITS Pilani", skills: "Vue, Node, MySQL",   resume: "#", is_active: true  },
-        { id: 6, name: "Pooja Yadav",   username: "pooja987",  email: "pooja@college.com",  branch: "CSE", cgpa: "8.4", college: "IIT Madras",  skills: "React, Tailwind",    resume: "#", is_active: false },
-        { id: 7, name: "Vikram Patel",  username: "vikram111", email: "vikram@college.com", branch: "EE",  cgpa: "7.2", college: "NIT Surathkal", skills: "C++, Embedded",    resume: "#", is_active: true  },
-        { id: 8, name: "Anjali Mishra", username: "anjali222", email: "anjali@college.com", branch: "CSE", cgpa: "9.0", college: "IIT Kanpur",  skills: "Python, ML, Django", resume: "#", is_active: true  },
-      ],
-      applications: [
-        { id: 1, student_id: 1, company: "Google",    role: "Software Engineer",    apply_date: "10 May 2026", status: "Pending"     },
-        { id: 2, student_id: 1, company: "Amazon",    role: "Backend Developer",    apply_date: "12 May 2026", status: "Shortlisted" },
-        { id: 3, student_id: 2, company: "Flipkart",  role: "Frontend Developer",   apply_date: "11 May 2026", status: "Selected"    },
-        { id: 4, student_id: 3, company: "Microsoft", role: "SDE-1",                apply_date: "13 May 2026", status: "Rejected"    },
-        { id: 5, student_id: 4, company: "Google",    role: "Software Engineer",    apply_date: "10 May 2026", status: "Selected"    },
-        { id: 6, student_id: 4, company: "Zomato",    role: "Full Stack Developer", apply_date: "14 May 2026", status: "Pending"     },
-        { id: 7, student_id: 5, company: "Wipro",     role: "Junior Developer",     apply_date: "15 May 2026", status: "Pending"     },
-        { id: 8, student_id: 8, company: "Amazon",    role: "Backend Developer",    apply_date: "12 May 2026", status: "Shortlisted" },
-      ]
+      students: [],
+      loading: false
     }
+  },
+
+  async mounted() {
+    const token = localStorage.getItem("token")
+    const res = await axios.get("http://localhost:5000/admin/students", {
+      headers: { "Authentication-Token": token }
+    })
+    this.students = res.data.students
   },
 
   computed: {
     filteredStudents() {
       const q = this.search.toLowerCase()
       return this.students.filter(s =>
-        s.name.toLowerCase().includes(q)   ||
-        s.email.toLowerCase().includes(q)  ||
-        s.branch.toLowerCase().includes(q) ||
+        s.name.toLowerCase().includes(q) ||
+        s.email.toLowerCase().includes(q) ||
         (s.is_active ? 'active' : 'blacklisted').includes(q)
       )
     },
     studentApplications() {
       if (!this.selectedStudent) return []
-      return this.applications.filter(a => a.student_id === this.selectedStudent.id)
+      return this.selectedStudent.applications || []
     }
   },
 
@@ -216,8 +199,21 @@ export default {
     viewProfile(student) {
       this.selectedStudent = student
     },
-    blacklistStudent(student) {
+
+    async blacklistStudent(student) {
+      const token = localStorage.getItem("token")
+      await axios.post(`http://localhost:5000/admin/student/blacklist/${student.id}`, {}, {
+        headers: { "Authentication-Token": token }
+      })
       student.is_active = false
+    },
+
+    async unblacklistStudent(student) {
+      const token = localStorage.getItem("token")
+      await axios.post(`http://localhost:5000/admin/student/unblacklist/${student.id}`, {}, {
+        headers: { "Authentication-Token": token }
+      })
+      student.is_active = true
     }
   }
 }

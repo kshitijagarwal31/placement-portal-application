@@ -10,7 +10,7 @@
         v-model="search"
         class="search-input"
         type="text"
-        placeholder="Search by name, industry or location..."
+        placeholder="Search by name or industry..."
       />
     </div>
 
@@ -20,9 +20,7 @@
           <tr>
             <th>S.No</th>
             <th>Company</th>
-            <th>Industry</th>
-            <th>Location</th>
-            <th>Package</th>
+            <th>Email</th>
             <th>Status</th>
             <th>Action</th>
           </tr>
@@ -31,9 +29,7 @@
           <tr v-for="(company, index) in filteredCompanies" :key="company.id">
             <td>{{ index + 1 }}</td>
             <td>{{ company.name }}</td>
-            <td>{{ company.industry }}</td>
-            <td>{{ company.location }}</td>
-            <td>{{ company.package }}</td>
+            <td>{{ company.email }}</td>
             <td>
               <span :class="
                 company.status === 'Pending'  ? 'badge-pending'  :
@@ -43,20 +39,16 @@
             </td>
             <td>
               <div class="actions">
-
                 <template v-if="company.status === 'Pending'">
                   <button class="btn-approve" @click="approveCompany(company)">Approve</button>
                   <button class="btn-reject"  @click="rejectCompany(company)">Reject</button>
                 </template>
-
                 <template v-if="company.status === 'Active'">
                   <button class="btn-view" @click="viewProfile(company)">View Profile</button>
                 </template>
-
                 <template v-if="company.status === 'Rejected'">
                   <span class="text-rejected">—</span>
                 </template>
-
               </div>
             </td>
           </tr>
@@ -80,7 +72,7 @@
           <div class="avatar-lg">{{ selectedCompany.name.charAt(0) }}</div>
           <div>
             <h4>{{ selectedCompany.name }}</h4>
-            <p>{{ selectedCompany.industry }} · {{ selectedCompany.location }}</p>
+            <p>{{ selectedCompany.industry }} · {{ selectedCompany.address }}</p>
           </div>
           <span :class="
             selectedCompany.status === 'Active'  ? 'badge-active'  :
@@ -91,12 +83,8 @@
 
         <div class="detail-rows">
           <div class="detail-row">
-            <span class="detail-label">Full Name</span>
-            <span class="detail-value">{{ selectedCompany.full_name }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Username</span>
-            <span class="detail-value">{{ selectedCompany.username }}</span>
+            <span class="detail-label">Name</span>
+            <span class="detail-value">{{ selectedCompany.name }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Email</span>
@@ -108,7 +96,7 @@
           </div>
           <div class="detail-row">
             <span class="detail-label">HR Contact</span>
-            <span class="detail-value">{{ selectedCompany.hr_contact }}</span>
+            <span class="detail-value">{{ selectedCompany.contact }}</span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Address</span>
@@ -140,7 +128,6 @@
                 <tr>
                   <th>S.No</th>
                   <th>Role</th>
-                  <th>Package</th>
                   <th>Last Date</th>
                   <th>Status</th>
                 </tr>
@@ -148,13 +135,12 @@
               <tbody>
                 <tr v-for="(drive, index) in companyDrives" :key="drive.id">
                   <td>{{ index + 1 }}</td>
-                  <td>{{ drive.role }}</td>
-                  <td>{{ drive.package }}</td>
-                  <td>{{ drive.last_date }}</td>
+                  <td>{{ drive.job_title }}</td>
+                  <td>{{ drive.end_date }}</td>
                   <td>
                     <span :class="
-                      drive.status === 'Upcoming'  ? 'status-upcoming'  :
-                      drive.status === 'Ongoing'   ? 'status-ongoing'   :
+                      drive.status === 'Active'   ? 'status-ongoing'   :
+                      drive.status === 'Pending'  ? 'status-upcoming'  :
                       'status-completed'
                     ">{{ drive.status }}</span>
                   </td>
@@ -171,6 +157,8 @@
 </template>
 
 <script>
+import axios from "axios"
+
 export default {
   name: "AdminCompaniesView",
 
@@ -178,39 +166,31 @@ export default {
     return {
       search: "",
       selectedCompany: null,
-      companies: [
-        { id: 1, name: "Google",    full_name: "Google India Pvt Ltd",    username: "google_hr",    email: "hr@google.com",    industry: "Technology",  hr_contact: "+91 9800000001", location: "Bangalore", address: "Bangalore, Karnataka", website: "www.google.com",    package: "45 LPA", description: "Leading tech company.",      status: "Pending"  },
-        { id: 2, name: "Microsoft", full_name: "Microsoft India Pvt Ltd", username: "microsoft_hr", email: "hr@microsoft.com", industry: "Technology",  hr_contact: "+91 9800000002", location: "Hyderabad", address: "Hyderabad, Telangana",  website: "www.microsoft.com", package: "40 LPA", description: "Global software company.",    status: "Pending"  },
-        { id: 3, name: "Amazon",    full_name: "Amazon India Pvt Ltd",    username: "amazon_hr",    email: "hr@amazon.com",    industry: "E-Commerce",  hr_contact: "+91 9800000003", location: "Bangalore", address: "Bangalore, Karnataka", website: "www.amazon.com",    package: "35 LPA", description: "World's largest e-commerce.", status: "Active"   },
-        { id: 4, name: "Infosys",   full_name: "Infosys Limited",         username: "infosys_hr",   email: "hr@infosys.com",   industry: "IT Services", hr_contact: "+91 9800000004", location: "Pune",      address: "Pune, Maharashtra",    website: "www.infosys.com",   package: "8 LPA",  description: "Top IT services company.",   status: "Active"   },
-        { id: 5, name: "TCS",       full_name: "Tata Consultancy Services",username: "tcs_hr",      email: "hr@tcs.com",       industry: "IT Services", hr_contact: "+91 9800000005", location: "Mumbai",    address: "Mumbai, Maharashtra",  website: "www.tcs.com",       package: "7 LPA",  description: "Largest IT company India.",  status: "Rejected" },
-        { id: 6, name: "Wipro",     full_name: "Wipro Technologies",      username: "wipro_hr",     email: "hr@wipro.com",     industry: "IT Services", hr_contact: "+91 9800000006", location: "Delhi",     address: "Delhi, India",         website: "www.wipro.com",     package: "6 LPA",  description: "Global IT solutions.",       status: "Pending"  },
-        { id: 7, name: "Flipkart",  full_name: "Flipkart India Pvt Ltd",  username: "flipkart_hr",  email: "hr@flipkart.com",  industry: "E-Commerce",  hr_contact: "+91 9800000007", location: "Bangalore", address: "Bangalore, Karnataka", website: "www.flipkart.com",  package: "28 LPA", description: "India's top e-commerce.",    status: "Active"   },
-        { id: 8, name: "Zomato",    full_name: "Zomato India Pvt Ltd",    username: "zomato_hr",    email: "hr@zomato.com",    industry: "Food Tech",   hr_contact: "+91 9800000008", location: "Gurgaon",   address: "Gurgaon, Haryana",     website: "www.zomato.com",    package: "18 LPA", description: "Leading food delivery app.",  status: "Active"   },
-      ],
-      drives: [
-        { id: 1, company_id: 3, role: "Backend Developer",    package: "35 LPA", last_date: "20 May 2026", status: "Ongoing"   },
-        { id: 2, company_id: 3, role: "Data Engineer",        package: "30 LPA", last_date: "25 May 2026", status: "Upcoming"  },
-        { id: 3, company_id: 4, role: "Systems Engineer",     package: "8 LPA",  last_date: "15 May 2026", status: "Completed" },
-        { id: 4, company_id: 7, role: "Frontend Developer",   package: "28 LPA", last_date: "30 May 2026", status: "Upcoming"  },
-        { id: 5, company_id: 7, role: "Full Stack Developer", package: "25 LPA", last_date: "18 May 2026", status: "Ongoing"   },
-        { id: 6, company_id: 8, role: "Full Stack Developer", package: "18 LPA", last_date: "18 May 2026", status: "Ongoing"   },
-      ]
+      companies: [],
     }
+  },
+
+  async mounted() {
+    const token = localStorage.getItem("token")
+    const res = await axios.get("http://localhost:5000/admin/companies", {
+      headers: { "Authentication-Token": token }
+    })
+    const approved = res.data.companies.map(c => ({ ...c, status: "Active" }))
+    const pending = res.data.company_requests.map(c => ({ ...c, status: "Pending" }))
+    this.companies = [...approved, ...pending]
   },
 
   computed: {
     filteredCompanies() {
       const q = this.search.toLowerCase()
       return this.companies.filter(c =>
-        c.name.toLowerCase().includes(q)     ||
-        c.industry.toLowerCase().includes(q) ||
-        c.location.toLowerCase().includes(q)
+        c.name.toLowerCase().includes(q) ||
+        c.industry.toLowerCase().includes(q)
       )
     },
     companyDrives() {
       if (!this.selectedCompany) return []
-      return this.drives.filter(d => d.company_id === this.selectedCompany.id)
+      return this.selectedCompany.drives || []
     }
   },
 
@@ -218,8 +198,22 @@ export default {
     viewProfile(company) {
       this.selectedCompany = company
     },
-    approveCompany(company) { company.status = 'Active'   },
-    rejectCompany(company)  { company.status = 'Rejected' },
+
+    async approveCompany(company) {
+      const token = localStorage.getItem("token")
+      await axios.post(`http://localhost:5000/admin/company/approve/${company.id}`, {}, {
+        headers: { "Authentication-Token": token }
+      })
+      company.status = "Active"
+    },
+
+    async rejectCompany(company) {
+      const token = localStorage.getItem("token")
+      await axios.post(`http://localhost:5000/admin/company/reject/${company.id}`, {}, {
+        headers: { "Authentication-Token": token }
+      })
+      company.status = "Rejected"
+    }
   }
 }
 </script>

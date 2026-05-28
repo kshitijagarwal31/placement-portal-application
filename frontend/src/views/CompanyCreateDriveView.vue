@@ -148,7 +148,7 @@ export default {
 <style scoped>
 
 .topbar {
-  margin-bottom: 34px;
+  margin-bottom: 30px;
 }
 
 .topbar h1 {
@@ -164,15 +164,15 @@ export default {
 
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1.8fr;
-  gap: 24px;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 20px;
 }
 
 .section-box {
   background: white;
   border-radius: 18px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  padding: 34px;
+  padding: 28px;
 }
 
 .preview-top {
@@ -180,56 +180,54 @@ export default {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding-bottom: 28px;
+  padding-bottom: 24px;
   border-bottom: 1px solid #f3f4f6;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .preview-avatar {
-  width: 82px;
-  height: 82px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   background: #eff6ff;
   color: #2563eb;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 34px;
+  font-size: 30px;
   font-weight: 700;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .preview-top h2 {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: #111827;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .preview-top p {
-  font-size: 15px;
+  font-size: 14px;
   color: #6b7280;
 }
 
 .profile-details {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-bottom: 28px;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .detail-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 15px;
-  padding-bottom: 12px;
+  font-size: 14px;
+  padding-bottom: 10px;
   border-bottom: 1px solid #f3f4f6;
 }
 
-.detail-label { 
-  color: #6b7280; 
-}
+.detail-label { color: #6b7280; }
 
 .detail-value {
   color: #111827;
@@ -242,57 +240,53 @@ export default {
 .badge-pending {
   background: #fef9c3;
   color: #ca8a04;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 5px 14px;
+  padding: 4px 12px;
   border-radius: 20px;
 }
 
 .info-box {
   background: #eff6ff;
   border-radius: 10px;
-  padding: 16px;
-  font-size: 14px;
+  padding: 14px;
+  font-size: 13px;
   color: #2563eb;
   line-height: 1.6;
 }
 
 .form-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: #111827;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 14px;
 }
 
-.form-group {
-  margin-bottom: 20px;
-}
+.form-group { margin-bottom: 16px; }
 
 .form-group label {
   display: block;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #374151;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
-.required { 
-  color: #dc2626;
-}
+.required { color: #dc2626; }
 
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 12px 16px;
+  padding: 10px 14px;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  font-size: 15px;
+  font-size: 14px;
   color: #111827;
   outline: none;
   transition: 0.2s;
@@ -305,40 +299,35 @@ export default {
   border-color: #2563eb;
 }
 
-.form-bottom { 
-  margin-top: 6px;
-}
+.form-bottom { margin-top: 4px; }
 
 .btn-save {
   width: 100%;
-  padding: 14px;
+  padding: 12px;
   background: #2563eb;
   color: white;
   border: none;
   border-radius: 10px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s;
 }
 
-.btn-save:hover { 
-  background: #1d4ed8; 
-}
+.btn-save:hover { background: #1d4ed8; }
 
 .save-msg {
   color: #16a34a;
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .error-msg {
   color: #dc2626;
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
-
 
 </style>
