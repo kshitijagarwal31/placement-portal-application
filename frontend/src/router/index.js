@@ -29,7 +29,7 @@ const routes = [
     {path: "/login", component: LoginView},
     {path: "/register", component: RegisterView},
     
-    {path: "/admin_dashboard", component: AdminDashboardView, children: [
+    {path: "/admin_dashboard", component: AdminDashboardView, meta: { requiresAuth: true }, children: [
         {path: "", component: AdminHomeView},
         {path: "students", component: AdminStudentsView},
         {path: "companies", component: AdminCompaniesView,},
@@ -37,14 +37,14 @@ const routes = [
         {path: "applications", component: AdminApplicationsView}
     ]},
 
-    {path: "/student_dashboard", component: StudentDashboardView, children: [
+    {path: "/student_dashboard", component: StudentDashboardView, meta: { requiresAuth: true }, children: [
         {path: "", component: StudentHomeView},
         {path: "profile", component: StudentProfileView},
         {path: "placement_drives", component: StudentPlacementDriveView},
         {path: "applications", component: StudentApplicationView},
     ]},
 
-    {path: "/company_dashboard", component: CompanyDashboardView, children: [
+    {path: "/company_dashboard", component: CompanyDashboardView, meta: { requiresAuth: true }, children: [
         {path: "", component: CompanyHomeView},
         {path: "create_drive", component: CompanyCreateDriveView},
         {path: "applications", component: CompanyApplicationsView},
@@ -59,5 +59,12 @@ const router = createRouter({
     routes
 })
 
+router.beforeEach((to, from) => {
+    const token = localStorage.getItem('token')
+    if (to.meta.requiresAuth && !token) {
+        return '/login' 
+    }
+    return true  
+})
 
 export default router
