@@ -55,7 +55,7 @@
         </router-link>
 
         <router-link to="/student_dashboard/profile" class="menu-item">
-          👤 Complete Profile
+          👤 My Profile
         </router-link>
 
         <router-link to="/student_dashboard/placement_drives" class="menu-item">
@@ -75,7 +75,7 @@
         </router-link>
 
         <router-link to="/company_dashboard/profile" class="menu-item">
-          👤 Complete Profile
+          👤 My Profile
         </router-link>
 
         <router-link to="/company_dashboard/create_drive" class="menu-item">

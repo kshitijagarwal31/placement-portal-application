@@ -12,7 +12,7 @@ company_bp = Blueprint("company_bp", __name__)
 @roles_required("company")
 def company_dashboard_data():
 
-    all_drives    = PlacementDrive.query.filter_by(company_id=current_user.id).all()
+    all_drives     = PlacementDrive.query.filter_by(company_id=current_user.id).all()
     active_drives  = [d for d in all_drives if d.status == "Active"]
     closed_drives  = [d for d in all_drives if d.status == "Closed"]
     pending_drives = [d for d in all_drives if d.status == "Pending"]
@@ -22,13 +22,14 @@ def company_dashboard_data():
         Application.drive_id.in_(drive_ids)
     ).all()
 
+    selected_count = len([a for a in applications if a.status == "Selected"])
+
     return jsonify({
         "stats": {
             "total_drives":       len(all_drives),
             "active_drives":      len(active_drives),
-            "closed_drives":      len(closed_drives),
-            "pending_drives":     len(pending_drives),
-            "total_applications": len(applications)
+            "total_applications": len(applications),
+            "selected_count":     selected_count,  
         },
         "placement_drives": [
             {
@@ -51,6 +52,98 @@ def company_dashboard_data():
         ]
     }), 200
     
+    
+@company_bp.route("/company/complete_profile", methods=["GET", "POST"])
+@auth_required("token")
+@roles_required("company")
+def complete_company_profile():
+
+    if request.method == "GET":
+        company = CompanyProfile.query.filter_by(user_id=current_user.id).first()
+        return jsonify({
+            "name":              current_user.name,
+            "username":          current_user.username,
+            "email":             current_user.email,
+            "industry":          company.industry           if company else "",
+            "hr_contact_number": company.hr_contact_number  if company else "",
+            "address":           company.address            if company else "",
+            "description":       company.description        if company else "",
+            "website_link":      company.website_link       if company else ""
+        }), 200
+
+    data = request.get_json()
+
+    if data.get("name"):
+        current_user.name = data.get("name")
+    if data.get("username"):
+        current_user.username = data.get("username")
+    if data.get("email"):
+        current_user.email = data.get("email")
+
+    company = CompanyProfile.query.filter_by(user_id=current_user.id).first()
+    if not company:
+        company = CompanyProfile(
+            user_id=current_user.id,
+            industry=data.get("industry"),
+            description=data.get("description"),
+            hr_contact_number=data.get("hr_contact_number"),
+            address=data.get("address"),
+            website_link=data.get("website_link")
+        )
+        db.session.add(company)
+    else:
+        company.industry          = data.get("industry",          company.industry)
+        company.description       = data.get("description",       company.description)
+        company.hr_contact_number = data.get("hr_contact_number", company.hr_contact_number)
+        company.address           = data.get("address",           company.address)
+        company.website_link      = data.get("website_link",      company.website_link)
+
+    db.session.commit()
+    return jsonify({"message": "Company profile saved successfully ✅"}), 200
+    
+    
+@company_bp.route("/company/create_drive", methods=["POST"])
+@auth_required("token")
+@roles_required("company")
+def create_drive():
+    data = request.get_json()
+
+    drive = PlacementDrive(
+        company_id      = current_user.id,
+        job_title       = data.get("job_title"),
+        job_description = data.get("job_description"),
+        salary          = data.get("salary"),
+        skills_required = data.get("skills_required"),
+        start_date      = datetime.strptime(data.get("start_date"), "%Y-%m-%d"),
+        last_date       = datetime.strptime(data.get("last_date"),  "%Y-%m-%d"),
+        status          = "Pending"
+    )
+    db.session.add(drive)
+    db.session.commit()
+
+    return jsonify({"message": "Drive created successfully ✅"}), 201
+
+
+@company_bp.route("/company/my_drives", methods=["GET"])
+@auth_required("token")
+@roles_required("company")
+def company_my_drives():
+
+    all_drives = PlacementDrive.query.filter_by(company_id=current_user.id).all()
+
+    return jsonify({
+        "drives": [
+            {
+                "id":         d.id,
+                "job_title":  d.job_title,
+                "salary":     d.salary or "",
+                "status":     d.status,
+                "start_date": str(d.start_date),
+                "end_date":   str(d.last_date)
+            } for d in all_drives
+        ]
+    }), 200
+
 
 @company_bp.route("/company/drive_detail/<int:drive_id>", methods=["GET"])
 @auth_required("token")
@@ -88,47 +181,6 @@ def company_drive_detail(drive_id):
             } for a in apps
         ]
     }), 200
-
-
-@company_bp.route("/company/complete_profile", methods=["GET", "POST"])
-@auth_required("token")
-@roles_required("company")
-def complete_company_profile():
-    
-    if request.method == "GET":
-        company = CompanyProfile.query.filter_by(user_id=current_user.id).first()
-        return jsonify({
-            "name":           current_user.name,
-            "username":       current_user.username,
-            "email":          current_user.email,
-            "industry":       company.industry if company else "",
-            "hr_contact_number": company.hr_contact_number if company else "",
-            "address":        company.address if company else "",
-            "description":    company.description if company else "",
-            "website_link":      company.website_link if company else ""
-        }), 200
-
-    data = request.get_json()
-    company = CompanyProfile.query.filter_by(user_id=current_user.id).first()
-    if not company:
-        company = CompanyProfile(
-            user_id=current_user.id,
-            industry=data.get("industry"),
-            description=data.get("description"),
-            hr_contact_number=data.get("hr_contact_number"),
-            address=data.get("address"),
-            website_link=data.get("website_link") 
-        )
-        db.session.add(company)
-    else:
-        company.industry = data.get("industry", company.industry)
-        company.description = data.get("description", company.description)
-        company.hr_contact_number = data.get("hr_contact_number", company.hr_contact_number)
-        company.address = data.get("address", company.address)
-        company.website_link = data.get("website_link", company.website_link)
-        
-    db.session.commit()
-    return jsonify({"message": "Company profile saved successfully ✅"}), 200
 
 
 @company_bp.route("/company/application_detail/<int:app_id>", methods=["GET"])

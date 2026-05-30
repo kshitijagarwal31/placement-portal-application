@@ -3,7 +3,7 @@
 
     <div class="topbar">
       <div>
-        <h1>Post Placement Drive</h1>
+        <h1>Create Placement Drive</h1>
         <p>Create a new placement drive for students</p>
       </div>
     </div>
@@ -32,8 +32,8 @@
             <span class="detail-value">{{ form.skills_required || '—' }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Status</span>
-            <span class="badge-pending">Pending Approval</span>
+            <span class="detail-label">Job Description</span>
+            <span class="detail-value">{{ form.job_description || '—' }}</span>
           </div>
         </div>
 
@@ -93,6 +93,8 @@
 </template>
 
 <script>
+import axios from "axios"
+
 export default {
   name: "CompanyPostDriveView",
 
@@ -112,7 +114,16 @@ export default {
   },
 
   methods: {
-    submitDrive() {
+
+    getHeaders() {
+      return {
+        headers: {
+          "Authentication-Token": localStorage.getItem("token"),
+        },
+      }
+    },
+
+    async submitDrive() {
       const required = ['job_title', 'job_description', 'start_date', 'last_date']
       const allFilled = required.every(f => this.form[f] !== '')
 
@@ -126,20 +137,33 @@ export default {
         return
       }
 
-      this.errorMsg  = ""
-      this.submitted = true
+      this.errorMsg = ""
 
-      setTimeout(() => {
-        this.submitted = false
-        this.form = {
-          job_title:       "",
-          job_description: "",
-          salary:          "",
-          skills_required: "",
-          start_date:      "",
-          last_date:       "",
-        }
-      }, 3000)
+      try {
+        await axios.post(
+          "http://localhost:5000/company/create_drive",
+          this.form,
+          this.getHeaders()
+        )
+
+        this.submitted = true
+
+        setTimeout(() => {
+          this.submitted = false
+          this.form = {
+            job_title:       "",
+            job_description: "",
+            salary:          "",
+            skills_required: "",
+            start_date:      "",
+            last_date:       "",
+          }
+        }, 3000)
+
+      } catch (err) {
+        console.error("Drive submit failed:", err)
+        this.errorMsg = "Something went wrong! Try again."
+      }
     }
   }
 }
@@ -227,7 +251,9 @@ export default {
   border-bottom: 1px solid #f3f4f6;
 }
 
-.detail-label { color: #6b7280; }
+.detail-label { 
+  color: #6b7280; 
+}
 
 .detail-value {
   color: #111827;
@@ -268,7 +294,9 @@ export default {
   gap: 14px;
 }
 
-.form-group { margin-bottom: 16px; }
+.form-group { 
+  margin-bottom: 16px; 
+}
 
 .form-group label {
   display: block;
@@ -278,7 +306,9 @@ export default {
   margin-bottom: 6px;
 }
 
-.required { color: #dc2626; }
+.required { 
+  color: #dc2626; 
+}
 
 .form-group input,
 .form-group textarea {
@@ -299,7 +329,9 @@ export default {
   border-color: #2563eb;
 }
 
-.form-bottom { margin-top: 4px; }
+.form-bottom { 
+  margin-top: 4px; 
+}
 
 .btn-save {
   width: 100%;
@@ -314,7 +346,9 @@ export default {
   transition: 0.2s;
 }
 
-.btn-save:hover { background: #1d4ed8; }
+.btn-save:hover { 
+  background: #1d4ed8; 
+}
 
 .save-msg {
   color: #16a34a;

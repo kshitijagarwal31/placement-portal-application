@@ -3,12 +3,16 @@
 
     <div class="topbar">
       <div>
-        <h1>Company Profile</h1>
+        <h1>My Profile</h1>
         <p>Manage your company information</p>
       </div>
     </div>
 
-    <div class="form-grid">
+    <div v-if="loading" class="empty" style="padding: 60px 0;">
+      Loading profile...
+    </div>
+
+    <div v-else class="form-grid">
 
       <div class="section-box">
 
@@ -112,12 +116,15 @@
 </template>
 
 <script>
+import axios from "axios"
+
 export default {
   name: "CompanyProfileView",
 
   data() {
     return {
-      saved: false,
+      loading:  true,
+      saved:    false,
       errorMsg: "",
       form: {
         full_name:   "",
@@ -132,8 +139,43 @@ export default {
     }
   },
 
+  async mounted() {
+    await this.fetchProfile()
+  },
+
   methods: {
-    saveProfile() {
+
+    getHeaders() {
+      return {
+        headers: {
+          "Authentication-Token": localStorage.getItem("token"),
+        },
+      }
+    },
+
+    async fetchProfile() {
+      this.loading = true
+      try {
+        const res = await axios.get("http://localhost:5000/company/complete_profile", this.getHeaders())
+        const data = res.data
+
+        this.form.full_name   = data.name              || ""
+        this.form.username    = data.username           || ""
+        this.form.email       = data.email              || ""
+        this.form.industry    = data.industry           || ""
+        this.form.hr_contact  = data.hr_contact_number  || ""
+        this.form.website     = data.website_link       || ""
+        this.form.address     = data.address            || ""
+        this.form.description = data.description        || ""
+
+      } catch (err) {
+        console.error("Profile load failed:", err)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async saveProfile() {
       const required = ['full_name', 'username', 'email', 'industry', 'hr_contact', 'address']
       const allFilled = required.every(f => this.form[f] !== '')
 
@@ -143,11 +185,30 @@ export default {
       }
 
       this.errorMsg = ""
-      this.saved    = true
 
-      setTimeout(() => {
-        this.saved = false
-      }, 3000)
+      try {
+        await axios.post(
+          "http://localhost:5000/company/complete_profile",
+          {
+            name:              this.form.full_name,
+            username:          this.form.username,
+            email:             this.form.email,
+            industry:          this.form.industry,
+            hr_contact_number: this.form.hr_contact,
+            website_link:      this.form.website,
+            address:           this.form.address,
+            description:       this.form.description,
+          },
+          this.getHeaders()
+        )
+
+        this.saved = true
+        setTimeout(() => { this.saved = false }, 3000)
+
+      } catch (err) {
+        console.error("Profile save failed:", err)
+        this.errorMsg = "Something went wrong! Try again."
+      }
     }
   }
 }
@@ -235,7 +296,7 @@ export default {
   border-bottom: 1px solid #f3f4f6;
 }
 
-.detail-label {
+.detail-label { 
   color: #6b7280; 
 }
 
@@ -278,8 +339,8 @@ export default {
   gap: 16px;
 }
 
-.form-group {
-  margin-bottom: 20px;
+.form-group { 
+  margin-bottom: 20px; 
 }
 
 .form-group label {
@@ -314,7 +375,13 @@ export default {
   border-color: #2563eb;
 }
 
-.form-bottom {
+.form-group input:disabled {
+  background: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.form-bottom { 
   margin-top: 6px; 
 }
 
@@ -347,6 +414,12 @@ export default {
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 12px;
+}
+
+.empty {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
 }
 
 </style>

@@ -5,22 +5,37 @@
       <h1>Company Dashboard</h1>
     </div>
 
-    <div class="cards">
+    <div v-if="!checkingProfile && !isProfileComplete" class="profile-banner">
+      <div class="banner-left">
+        <span class="banner-icon">⚠️</span>
+        <div>
+          <p class="banner-title">Complete Your Profile First!</p>
+          <p class="banner-sub">First complete your profile before creating a Placement Drive.</p>
+        </div>
+      </div>
+      <button class="btn-complete" @click="goToProfile">Complete Profile</button>
+    </div>
+
+    <div v-if="loadingStats" class="empty" style="padding: 40px 0;">
+      Loading...
+    </div>
+
+    <div v-else class="cards">
       <div class="card">
-        <h2>{{ totalJobs }}</h2>
-        <p>Jobs Posted</p>
+        <h2>{{ stats.total_drives }}</h2>
+        <p>Total Drives</p>
       </div>
       <div class="card">
-        <h2>{{ totalApplicants }}</h2>
-        <p>Total Applicants</p>
+        <h2>{{ stats.active_drives }}</h2>
+        <p>Active Drives</p>
       </div>
       <div class="card">
-        <h2>{{ totalSelected }}</h2>
-        <p>Selected</p>
+        <h2>{{ stats.total_applications }}</h2>
+        <p>Total Applications</p>
       </div>
       <div class="card">
-        <h2>{{ totalDrives }}</h2>
-        <p>Placement Drives</p>
+        <h2>{{ stats.selected_count }}</h2>
+        <p>Selected Students</p>
       </div>
     </div>
 
@@ -31,25 +46,28 @@
           <h3>Recent Applicants</h3>
         </div>
 
-        <div v-if="applicants.length === 0" class="empty">
+        <div v-if="loadingStats" class="empty">Loading...</div>
+
+        <div v-else-if="applications.length === 0" class="empty">
           No applicants yet
         </div>
 
         <div
-          v-for="app in applicants.slice(0, 5)"
+          v-for="app in applications.slice(0, 5)"
           :key="app.id"
           class="request-item"
         >
           <div class="request-left">
-            <div class="avatar">{{ app.name.charAt(0) }}</div>
+            <div class="avatar">{{ app.student_name.charAt(0) }}</div>
             <div>
-              <p class="request-name">{{ app.name }}</p>
-              <p class="request-sub">{{ app.role }} · {{ app.branch }}</p>
+              <p class="request-name">{{ app.student_name }}</p>
+              <p class="request-sub">{{ app.drive_title }}</p>
             </div>
           </div>
           <span :class="
-            app.status === 'Selected' ? 'badge-selected' :
-            app.status === 'Pending'  ? 'badge-pending'  :
+            app.status === 'Selected'    ? 'badge-selected' :
+            app.status === 'Pending'     ? 'badge-pending'  :
+            app.status === 'Shortlisted' ? 'badge-active'   :
             'badge-rejected'
           ">{{ app.status }}</span>
         </div>
@@ -60,8 +78,10 @@
           <h3>Active Drives</h3>
         </div>
 
-        <div v-if="drives.length === 0" class="empty">
-          No active drives
+        <div v-if="loadingStats" class="empty">Loading...</div>
+
+        <div v-else-if="drives.length === 0" class="empty">
+          No drives yet
         </div>
 
         <div
@@ -70,15 +90,15 @@
           class="request-item"
         >
           <div class="request-left">
-            <div class="avatar">{{ drive.role.charAt(0) }}</div>
+            <div class="avatar">{{ drive.job_title.charAt(0) }}</div>
             <div>
-              <p class="request-name">{{ drive.role }}</p>
-              <p class="request-sub">{{ drive.date }} · {{ drive.package }}</p>
+              <p class="request-name">{{ drive.job_title }}</p>
+              <p class="request-sub">{{ drive.start_date }} · {{ drive.end_date }}</p>
             </div>
           </div>
           <span :class="
-            drive.status === 'Active'   ? 'badge-active'   :
-            drive.status === 'Pending'  ? 'badge-pending'  :
+            drive.status === 'Active'  ? 'badge-active'  :
+            drive.status === 'Pending' ? 'badge-pending' :
             'badge-completed'
           ">{{ drive.status }}</span>
         </div>
@@ -90,37 +110,133 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "CompanyHomeView",
 
   data() {
     return {
-      applicants: [
-        { id: 1, name: "Rahul Sharma",  role: "Software Engineer",   branch: "CSE", status: "Selected" },
-        { id: 2, name: "Priya Singh",   role: "Frontend Developer",  branch: "ECE", status: "Pending"  },
-        { id: 3, name: "Amit Kumar",    role: "Backend Developer",   branch: "ME",  status: "Rejected" },
-        { id: 4, name: "Sneha Verma",   role: "Software Engineer",   branch: "CSE", status: "Selected" },
-        { id: 5, name: "Rohan Gupta",   role: "Full Stack Developer", branch: "IT",  status: "Pending"  },
-      ],
-      drives: [
-        { id: 1, role: "Software Engineer",    date: "25 May 2026", package: "45 LPA", status: "Active"    },
-        { id: 2, role: "Frontend Developer",   date: "28 May 2026", package: "30 LPA", status: "Pending"   },
-        { id: 3, role: "Backend Developer",    date: "30 May 2026", package: "35 LPA", status: "Active"    },
-        { id: 4, role: "Full Stack Developer",  date: "02 Jun 2026", package: "40 LPA", status: "Completed" },
-      ]
+      isProfileComplete: false,
+      checkingProfile:   true,
+      loadingStats:      true,
+      stats: {
+        total_drives:       0,
+        active_drives:      0,
+        total_applications: 0,
+        selected_count:     0,  
+      },
+      applications: [],
+      drives:       [],
     }
   },
 
-  computed: {
-    totalJobs()       { return this.drives.length },
-    totalApplicants() { return this.applicants.length },
-    totalSelected()   { return this.applicants.filter(a => a.status === 'Selected').length },
-    totalDrives()     { return this.drives.filter(d => d.status === 'Active').length }
+  async mounted() {
+    await this.checkProfile()
+    await this.fetchDashboardData()
+  },
+
+  methods: {
+
+    getHeaders() {
+      return {
+        headers: {
+          "Authentication-Token": localStorage.getItem("token"),
+        },
+      }
+    },
+
+    async checkProfile() {
+      this.checkingProfile = true
+      try {
+        const res = await axios.get("http://localhost:5000/company/complete_profile", this.getHeaders())
+        const profile = res.data
+        if (profile.name && profile.industry && profile.address && profile.hr_contact_number && profile.website_link) {
+          this.isProfileComplete = true
+        } else {
+          this.isProfileComplete = false
+        }
+      } catch (err) {
+        console.error("Profile check failed:", err)
+        this.isProfileComplete = false
+      } finally {
+        this.checkingProfile = false
+      }
+    },
+
+    async fetchDashboardData() {
+      this.loadingStats = true
+      try {
+        const res = await axios.get("http://localhost:5000/company/dashboard_data", this.getHeaders())
+        const data = res.data
+        this.stats        = data.stats
+        this.applications = data.applications
+        this.drives       = data.placement_drives
+      } catch (err) {
+        console.error("Dashboard data load failed:", err)
+      } finally {
+        this.loadingStats = false
+      }
+    },
+
+    goToProfile() {
+      this.$router.push("/company_dashboard/profile")
+    }
+
   }
 }
 </script>
 
 <style scoped>
+
+.profile-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fefce8;
+  border: 1px solid #fde047;
+  border-radius: 14px;
+  padding: 18px 24px;
+  margin-bottom: 24px;
+}
+
+.banner-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.banner-icon {
+  font-size: 24px;
+}
+
+.banner-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #854d0e;
+}
+
+.banner-sub {
+  font-size: 13px;
+  color: #a16207;
+  margin-top: 2px;
+}
+
+.btn-complete {
+  background: #ca8a04;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-complete:hover {
+  background: #a16207;
+}
 
 .topbar {
   margin-bottom: 30px;
@@ -280,5 +396,4 @@ export default {
   font-size: 14px;
   padding: 30px 0;
 }
-
 </style>

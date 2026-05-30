@@ -14,7 +14,11 @@
       />
     </div>
 
-    <div class="table-box">
+    <div v-if="loading" class="empty" style="padding: 60px 0;">
+      Loading drives...
+    </div>
+
+    <div v-else class="table-box">
       <table>
         <thead>
           <tr>
@@ -30,14 +34,14 @@
         <tbody>
           <tr v-for="(drive, index) in filteredDrives" :key="drive.id">
             <td>{{ index + 1 }}</td>
-            <td>{{ drive.role }}</td>
+            <td>{{ drive.job_title }}</td>
             <td>{{ drive.start_date }}</td>
-            <td>{{ drive.last_date }}</td>
-            <td>{{ drive.package }}</td>
+            <td>{{ drive.end_date }}</td>
+            <td>{{ drive.salary || '—' }}</td>
             <td>
               <span :class="
-                drive.status === 'Upcoming'  ? 'badge-upcoming'  :
-                drive.status === 'Ongoing'   ? 'badge-ongoing'   :
+                drive.status === 'Active'    ? 'badge-upcoming'  :
+                drive.status === 'Pending'   ? 'badge-ongoing'   :
                 'badge-completed'
               ">{{ drive.status }}</span>
             </td>
@@ -63,81 +67,85 @@
           <button class="btn-close" @click="selectedDrive = null">✕</button>
         </div>
 
-        <div class="detail-rows">
-          <div class="detail-row">
-            <span class="detail-label">Role</span>
-            <span class="detail-value">{{ selectedDrive.role }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Package</span>
-            <span class="detail-value">{{ selectedDrive.package }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Start Date</span>
-            <span class="detail-value">{{ selectedDrive.start_date }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Last Date</span>
-            <span class="detail-value">{{ selectedDrive.last_date }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Skills Required</span>
-            <span class="detail-value">{{ selectedDrive.skills_required }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Description</span>
-            <span class="detail-value">{{ selectedDrive.description }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Status</span>
-            <span :class="
-              selectedDrive.status === 'Upcoming'  ? 'badge-upcoming'  :
-              selectedDrive.status === 'Ongoing'   ? 'badge-ongoing'   :
-              'badge-completed'
-            ">{{ selectedDrive.status }}</span>
-          </div>
+        <div v-if="modalLoading" class="empty" style="padding: 40px 0;">
+          Loading detail...
         </div>
 
-        <div class="app-section">
-          <h4 class="app-section-title">
-            Applications
-            <span class="app-count">{{ driveApplications.length }}</span>
-          </h4>
-
-          <div v-if="driveApplications.length === 0" class="app-empty">
-            No applications yet
+        <div v-else>
+          <div class="detail-rows">
+            <div class="detail-row">
+              <span class="detail-label">Role</span>
+              <span class="detail-value">{{ selectedDrive.job_title }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Package</span>
+              <span class="detail-value">{{ selectedDrive.salary || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Start Date</span>
+              <span class="detail-value">{{ selectedDrive.start_date }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Last Date</span>
+              <span class="detail-value">{{ selectedDrive.end_date }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Skills Required</span>
+              <span class="detail-value">{{ selectedDrive.skills_required || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Description</span>
+              <span class="detail-value">{{ selectedDrive.description || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Status</span>
+              <span :class="
+                selectedDrive.status === 'Active'  ? 'badge-upcoming'  :
+                selectedDrive.status === 'Pending' ? 'badge-ongoing'   :
+                'badge-completed'
+              ">{{ selectedDrive.status }}</span>
+            </div>
           </div>
 
-          <div class="app-table-box" v-else>
-            <table class="app-table">
-              <thead>
-                <tr>
-                  <th>S.No</th>
-                  <th>Student</th>
-                  <th>Branch</th>
-                  <th>CGPA</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(app, index) in driveApplications" :key="app.id">
-                  <td>{{ index + 1 }}</td>
-                  <td>{{ app.student }}</td>
-                  <td>{{ app.branch }}</td>
-                  <td>{{ app.cgpa }}</td>
-                  <td>
-                    <span :class="[
-                      'status-badge',
-                      app.status === 'Pending'  ? 'status-pending'  :
-                      app.status === 'Selected' ? 'status-selected' :
-                      'status-rejected'
-                    ]">{{ app.status }}</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <div class="app-section">
+            <h4 class="app-section-title">
+              Applications
+              <span class="app-count">{{ selectedDrive.applications ? selectedDrive.applications.length : 0 }}</span>
+            </h4>
 
+            <div v-if="!selectedDrive.applications || selectedDrive.applications.length === 0" class="app-empty">
+              No applications yet
+            </div>
+
+            <div class="app-table-box" v-else>
+              <table class="app-table">
+                <thead>
+                  <tr>
+                    <th>S.No</th>
+                    <th>Student</th>
+                    <th>Apply Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(app, index) in selectedDrive.applications" :key="app.id">
+                    <td>{{ index + 1 }}</td>
+                    <td>{{ app.student_name }}</td>
+                    <td>{{ app.apply_date }}</td>
+                    <td>
+                      <span :class="[
+                        'status-badge',
+                        app.status === 'Pending'     ? 'status-pending'  :
+                        app.status === 'Selected'    ? 'status-selected' :
+                        app.status === 'Shortlisted' ? 'status-selected' :
+                        'status-rejected'
+                      ]">{{ app.status }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -147,48 +155,68 @@
 </template>
 
 <script>
+import axios from "axios"
+
 export default {
   name: "CompanyDrivesView",
 
   data() {
     return {
-      search: "",
+      loading:      true,
+      modalLoading: false,
+      search:        "",
       selectedDrive: null,
-      drives: [
-        { id: 1, role: "Software Engineer",    package: "45 LPA", start_date: "25 May 2026", last_date: "30 May 2026", skills_required: "Python, DSA",     status: "Upcoming",  description: "Looking for strong problem solvers." },
-        { id: 2, role: "Frontend Developer",   package: "30 LPA", start_date: "20 May 2026", last_date: "28 May 2026", skills_required: "React, CSS",       status: "Ongoing",   description: "Build beautiful user interfaces."    },
-        { id: 3, role: "Backend Developer",    package: "35 LPA", start_date: "22 May 2026", last_date: "29 May 2026", skills_required: "Node.js, MongoDB", status: "Upcoming",  description: "Work on scalable backend systems."   },
-        { id: 4, role: "Full Stack Developer", package: "40 LPA", start_date: "10 May 2026", last_date: "18 May 2026", skills_required: "Vue, Node, MySQL", status: "Completed", description: "End to end product development."     },
-        { id: 5, role: "Data Analyst",         package: "20 LPA", start_date: "08 May 2026", last_date: "15 May 2026", skills_required: "Python, SQL",      status: "Completed", description: "Analyze data and build reports."     },
-      ],
-      applications: [
-        { id: 1, drive: "Software Engineer",    student: "Rahul Sharma", branch: "CSE", cgpa: "8.9", status: "Pending"  },
-        { id: 2, drive: "Software Engineer",    student: "Sneha Verma",  branch: "CSE", cgpa: "9.2", status: "Selected" },
-        { id: 3, drive: "Frontend Developer",   student: "Priya Singh",  branch: "ECE", cgpa: "7.5", status: "Selected" },
-        { id: 4, drive: "Frontend Developer",   student: "Pooja Yadav",  branch: "CSE", cgpa: "8.4", status: "Pending"  },
-        { id: 5, drive: "Backend Developer",    student: "Amit Kumar",   branch: "ME",  cgpa: "8.1", status: "Rejected" },
-        { id: 6, drive: "Full Stack Developer", student: "Rohan Gupta",  branch: "IT",  cgpa: "7.8", status: "Pending"  },
-      ]
+      drives:        [],
     }
+  },
+
+  async mounted() {
+    await this.fetchDrives()
   },
 
   computed: {
     filteredDrives() {
       const q = this.search.toLowerCase()
       return this.drives.filter(d =>
-        d.role.toLowerCase().includes(q) ||
+        d.job_title.toLowerCase().includes(q) ||
         d.status.toLowerCase().includes(q)
       )
-    },
-    driveApplications() {
-      if (!this.selectedDrive) return []
-      return this.applications.filter(a => a.drive === this.selectedDrive.role)
     }
   },
 
   methods: {
-    viewDetail(drive) {
+
+    getHeaders() {
+      return {
+        headers: {
+          "Authentication-Token": localStorage.getItem("token"),
+        },
+      }
+    },
+
+    async fetchDrives() {
+      this.loading = true
+      try {
+        const res = await axios.get("http://localhost:5000/company/my_drives", this.getHeaders())
+        this.drives = res.data.drives || []
+      } catch (err) {
+        console.error("Drives load failed:", err)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async viewDetail(drive) {
       this.selectedDrive = drive
+      this.modalLoading  = true
+      try {
+        const res = await axios.get(`http://localhost:5000/company/drive_detail/${drive.id}`, this.getHeaders())
+        this.selectedDrive = res.data
+      } catch (err) {
+        console.error("Drive detail load failed:", err)
+      } finally {
+        this.modalLoading = false
+      }
     }
   }
 }
@@ -310,20 +338,20 @@ tr:hover td {
   font-weight: 600;
 }
 
-.badge-upcoming { 
+.badge-upcoming {
   background: #dbeafe;
   color: #2563eb;
-  }
+}
 
 .badge-ongoing {
   background: #fef9c3;
-  color: #ca8a04; 
-  }
+  color: #ca8a04;
+}
 
-.badge-completed { 
+.badge-completed {
   background: #dcfce7;
-  color: #16a34a; 
-  }
+  color: #16a34a;
+}
 
 .empty {
   text-align: center;
@@ -398,7 +426,7 @@ tr:hover td {
   border-bottom: 1px solid #f3f4f6;
 }
 
-.detail-label { 
+.detail-label {
   color: #6b7280;
 }
 
@@ -488,19 +516,19 @@ tr:hover td {
   white-space: nowrap;
 }
 
-.status-pending  { 
-  background: #fef9c3; 
-  color: #ca8a04; 
+.status-pending {
+  background: #fef9c3;
+  color: #ca8a04;
 }
 
-.status-selected { 
-  background: #dcfce7; 
+.status-selected {
+  background: #dcfce7;
   color: #16a34a;
 }
 
-.status-rejected { 
-  background: #fee2e2; 
-  color: #dc2626; 
+.status-rejected {
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 </style>
