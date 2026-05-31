@@ -14,7 +14,12 @@
       />
     </div>
 
-    <div class="table-box">
+    <!-- ✅ Loading state -->
+    <div v-if="loading" class="empty" style="padding: 60px 0;">
+      Loading drives...
+    </div>
+
+    <div v-else class="table-box">
       <table>
         <thead>
           <tr>
@@ -32,21 +37,26 @@
             <td>{{ index + 1 }}</td>
             <td>{{ drive.company }}</td>
             <td>{{ drive.job_title }}</td>
-            <td>{{ drive.last_date }}</td>
-            <td>{{ drive.salary }}</td>
+            <td>{{ drive.end_date }}</td>
+            <td>{{ drive.salary || '—' }}</td>
             <td>
               <span :class="
-                drive.status === 'Upcoming'  ? 'badge-upcoming'  :
-                drive.status === 'Ongoing'   ? 'badge-ongoing'   :
+                drive.status === 'Active'  ? 'badge-ongoing'   :
+                drive.status === 'Pending' ? 'badge-upcoming'  :
                 'badge-completed'
-              ">
-                {{ drive.status }}
-              </span>
+              ">{{ drive.status }}</span>
             </td>
             <td>
               <div class="actions">
-                <button class="btn-view"  @click="viewDetail(drive)">View Details</button>
-                <button class="btn-apply">Apply</button>
+                <button class="btn-view" @click="viewDetail(drive)">View Details</button>
+                <button
+                  class="btn-apply"
+                  @click="applyDrive(drive.id)"
+                  :disabled="drive.already_applied"
+                  :class="{ 'btn-applied': drive.already_applied }"
+                >
+                  {{ drive.already_applied ? 'Applied ✓' : 'Apply' }}
+                </button>
               </div>
             </td>
           </tr>
@@ -58,6 +68,7 @@
       </div>
     </div>
 
+    <!-- ✅ Modal -->
     <div v-if="selectedDrive" class="modal-overlay" @click.self="selectedDrive = null">
       <div class="modal">
 
@@ -66,53 +77,66 @@
           <button class="btn-close" @click="selectedDrive = null">✕</button>
         </div>
 
-        <div class="detail-top">
-          <div class="avatar-lg">{{ selectedDrive.company.charAt(0) }}</div>
-          <div>
-            <h4>{{ selectedDrive.company }}</h4>
-            <p>{{ selectedDrive.job_title }} · {{ selectedDrive.salary }}</p>
-          </div>
-          <span :class="
-            selectedDrive.status === 'Upcoming'  ? 'badge-upcoming'  :
-            selectedDrive.status === 'Ongoing'   ? 'badge-ongoing'   :
-            'badge-completed'
-          ">{{ selectedDrive.status }}</span>
+        <div v-if="modalLoading" class="empty" style="padding: 40px 0;">
+          Loading detail...
         </div>
 
-        <div class="detail-rows">
-          <div class="detail-row">
-            <span class="detail-label">Company</span>
-            <span class="detail-value">{{ selectedDrive.company }}</span>
+        <div v-else>
+          <div class="detail-top">
+            <div class="avatar-lg">{{ selectedDrive.company.charAt(0) }}</div>
+            <div>
+              <h4>{{ selectedDrive.company }}</h4>
+              <p>{{ selectedDrive.job_title }} · {{ selectedDrive.salary || '—' }}</p>
+            </div>
+            <span :class="
+              selectedDrive.status === 'Active'  ? 'badge-ongoing'  :
+              selectedDrive.status === 'Pending' ? 'badge-upcoming' :
+              'badge-completed'
+            ">{{ selectedDrive.status }}</span>
           </div>
-          <div class="detail-row">
-            <span class="detail-label">Job Title</span>
-            <span class="detail-value">{{ selectedDrive.job_title }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Salary</span>
-            <span class="detail-value">{{ selectedDrive.salary }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Start Date</span>
-            <span class="detail-value">{{ selectedDrive.start_date }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Last Date</span>
-            <span class="detail-value">{{ selectedDrive.last_date }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Skills Required</span>
-            <span class="detail-value">{{ selectedDrive.skills_required }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Job Description</span>
-            <span class="detail-value">{{ selectedDrive.job_description }}</span>
-          </div>
-        </div>
 
-        <div class="modal-footer">
-          <button class="btn-close-modal" @click="selectedDrive = null">Close</button>
-          <button class="btn-apply-modal">Apply Now</button>
+          <div class="detail-rows">
+            <div class="detail-row">
+              <span class="detail-label">Company</span>
+              <span class="detail-value">{{ selectedDrive.company }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Job Title</span>
+              <span class="detail-value">{{ selectedDrive.job_title }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Salary</span>
+              <span class="detail-value">{{ selectedDrive.salary || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Start Date</span>
+              <span class="detail-value">{{ selectedDrive.start_date }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Last Date</span>
+              <span class="detail-value">{{ selectedDrive.end_date }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Skills Required</span>
+              <span class="detail-value">{{ selectedDrive.skills_required || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Description</span>
+              <span class="detail-value">{{ selectedDrive.description || '—' }}</span>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-close-modal" @click="selectedDrive = null">Close</button>
+            <button
+              class="btn-apply-modal"
+              @click="applyDrive(selectedDrive.id)"
+              :disabled="selectedDrive.already_applied"
+              :class="{ 'btn-applied': selectedDrive.already_applied }"
+            >
+              {{ selectedDrive.already_applied ? 'Already Applied ✓' : 'Apply Now' }}
+            </button>
+          </div>
         </div>
 
       </div>
@@ -122,24 +146,23 @@
 </template>
 
 <script>
+import axios from "axios"
+
 export default {
   name: "StudentPlacementDrivesView",
 
   data() {
     return {
-      search: "",
+      loading:       true,
+      modalLoading:  false,
+      search:        "",
       selectedDrive: null,
-      drives: [
-        { id: 1, company: "Google",    job_title: "Software Engineer",    start_date: "20 May 2026", last_date: "25 May 2026", salary: "45 LPA", skills_required: "DSA, System Design, Python",    job_description: "SWE role at Google India.",        status: "Upcoming"  },
-        { id: 2, company: "Microsoft", job_title: "SDE-1",                start_date: "22 May 2026", last_date: "28 May 2026", salary: "40 LPA", skills_required: "C++, Java, System Design",      job_description: "Software Dev Engineer role.",       status: "Upcoming"  },
-        { id: 3, company: "Amazon",    job_title: "Backend Developer",    start_date: "15 May 2026", last_date: "20 May 2026", salary: "35 LPA", skills_required: "Node.js, AWS, Databases",       job_description: "Backend dev at Amazon India.",      status: "Ongoing"   },
-        { id: 4, company: "Flipkart",  job_title: "Frontend Developer",   start_date: "25 May 2026", last_date: "30 May 2026", salary: "28 LPA", skills_required: "React, Vue.js, CSS",            job_description: "Frontend dev at Flipkart.",         status: "Upcoming"  },
-        { id: 5, company: "Zomato",    job_title: "Full Stack Developer", start_date: "12 May 2026", last_date: "18 May 2026", salary: "18 LPA", skills_required: "React, Node.js, MongoDB",       job_description: "Full stack role at Zomato.",        status: "Ongoing"   },
-        { id: 6, company: "Infosys",   job_title: "Systems Engineer",     start_date: "10 May 2026", last_date: "15 May 2026", salary: "8 LPA",  skills_required: "Java, SQL, Networking",          job_description: "Systems Engineer program.",         status: "Completed" },
-        { id: 7, company: "TCS",       job_title: "Developer",            start_date: "05 May 2026", last_date: "10 May 2026", salary: "7 LPA",  skills_required: "Java, Python, SQL",             job_description: "TCS NextStep developer role.",      status: "Completed" },
-        { id: 8, company: "Wipro",     job_title: "Junior Developer",     start_date: "18 May 2026", last_date: "22 May 2026", salary: "6 LPA",  skills_required: "Java, C++, Communication",      job_description: "Junior dev at Wipro Technologies.", status: "Upcoming"  },
-      ]
+      drives:        [],
     }
+  },
+
+  async mounted() {
+    await this.fetchDrives()
   },
 
   computed: {
@@ -153,15 +176,66 @@ export default {
   },
 
   methods: {
-    viewDetail(drive) {
+
+    getHeaders() {
+      return {
+        headers: {
+          "Authentication-Token": localStorage.getItem("token"),
+        },
+      }
+    },
+
+    // ✅ Saari active drives load karo
+    async fetchDrives() {
+      this.loading = true
+      try {
+        const res = await axios.get("http://localhost:5000/student/all_drives", this.getHeaders())
+        this.drives = res.data.drives || []
+      } catch (err) {
+        console.error("Drives load failed:", err)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    // ✅ Drive detail load karo
+    async viewDetail(drive) {
       this.selectedDrive = drive
+      this.modalLoading  = true
+      try {
+        const res = await axios.get(`http://localhost:5000/student/drive_detail/${drive.id}`, this.getHeaders())
+        this.selectedDrive = res.data
+      } catch (err) {
+        console.error("Drive detail load failed:", err)
+      } finally {
+        this.modalLoading = false
+      }
+    },
+
+    // ✅ Apply karo
+    async applyDrive(driveId) {
+      try {
+        await axios.post(`http://localhost:5000/student/apply/${driveId}`, {}, this.getHeaders())
+        alert("Applied successfully! ✅")
+
+        // ✅ List mein bhi update karo
+        const drive = this.drives.find(d => d.id === driveId)
+        if (drive) drive.already_applied = true
+
+        if (this.selectedDrive && this.selectedDrive.id === driveId) {
+          this.selectedDrive.already_applied = true
+        }
+
+      } catch (err) {
+        const msg = err.response?.data?.message || "Something went wrong!"
+        alert(msg)
+      }
     }
   }
 }
 </script>
 
 <style scoped>
-
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -170,18 +244,15 @@ export default {
   flex-wrap: wrap;
   gap: 20px;
 }
-
 .topbar h1 {
   font-size: 34px;
   color: #111827;
   margin-bottom: 5px;
 }
-
 .topbar p {
   color: #6b7280;
   font-size: 14px;
 }
-
 .search-input {
   width: 260px;
   padding: 11px 14px;
@@ -192,27 +263,20 @@ export default {
   transition: 0.2s;
   background: white;
 }
-
 .search-input:focus {
   border-color: #2563eb;
 }
-
 .table-box {
   background: white;
   border-radius: 18px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   overflow: hidden;
 }
-
 table {
   width: 100%;
   border-collapse: collapse;
 }
-
-thead {
-  background: #f9fafb;
-}
-
+thead { background: #f9fafb; }
 th {
   padding: 16px 20px;
   text-align: left;
@@ -221,7 +285,6 @@ th {
   font-weight: 600;
   border-bottom: 1px solid #e5e7eb;
 }
-
 td {
   padding: 16px 20px;
   font-size: 15px;
@@ -229,21 +292,13 @@ td {
   border-bottom: 1px solid #f3f4f6;
   font-weight: 600;
 }
-
-tr:last-child td {
-  border-bottom: none;
-}
-
-tr:hover td {
-  background: #f9fafb;
-}
-
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f9fafb; }
 .actions {
   display: flex;
   gap: 10px;
   align-items: center;
 }
-
 .btn-view {
   background: #eff6ff;
   color: #2563eb;
@@ -255,11 +310,7 @@ tr:hover td {
   cursor: pointer;
   transition: 0.2s;
 }
-
-.btn-view:hover {
-  background: #dbeafe;
-}
-
+.btn-view:hover { background: #dbeafe; }
 .btn-apply {
   background: #dcfce7;
   color: #16a34a;
@@ -271,42 +322,27 @@ tr:hover td {
   cursor: pointer;
   transition: 0.2s;
 }
-
-.btn-apply:hover {
-  background: #bbf7d0;
+.btn-apply:hover { background: #bbf7d0; }
+.btn-applied {
+  background: #f3f4f6 !important;
+  color: #9ca3af !important;
+  cursor: not-allowed !important;
 }
-
-.badge-upcoming,
-.badge-ongoing,
-.badge-completed {
+.badge-upcoming, .badge-ongoing, .badge-completed {
   padding: 5px 12px;
   border-radius: 20px;
   font-size: 13px;
   font-weight: 600;
 }
-
-.badge-upcoming {
-  background: #dbeafe;
-  color: #2563eb;
-}
-
-.badge-ongoing {
-  background: #fef9c3;
-  color: #ca8a04;
-}
-
-.badge-completed {
-  background: #dcfce7;
-  color: #16a34a;
-}
-
+.badge-upcoming { background: #dbeafe; color: #2563eb; }
+.badge-ongoing  { background: #fef9c3; color: #ca8a04; }
+.badge-completed { background: #dcfce7; color: #16a34a; }
 .empty {
   text-align: center;
   color: #9ca3af;
   font-size: 15px;
   padding: 40px 0;
 }
-
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -316,7 +352,6 @@ tr:hover td {
   align-items: center;
   z-index: 1000;
 }
-
 .modal {
   background: white;
   border-radius: 18px;
@@ -326,7 +361,6 @@ tr:hover td {
   overflow-y: auto;
   padding: 28px;
 }
-
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -339,13 +373,11 @@ tr:hover td {
   padding-bottom: 16px;
   border-bottom: 1px solid #f3f4f6;
 }
-
 .modal-header h3 {
   font-size: 18px;
   font-weight: 600;
   color: #111827;
 }
-
 .btn-close {
   background: #f3f4f6;
   border: none;
@@ -356,7 +388,6 @@ tr:hover td {
   cursor: pointer;
   color: #374151;
 }
-
 .detail-top {
   display: flex;
   align-items: center;
@@ -365,7 +396,6 @@ tr:hover td {
   padding-bottom: 16px;
   border-bottom: 1px solid #f3f4f6;
 }
-
 .avatar-lg {
   width: 52px;
   height: 52px;
@@ -379,7 +409,6 @@ tr:hover td {
   font-weight: 700;
   flex-shrink: 0;
 }
-
 .detail-top h4 {
   font-size: 16px;
   font-weight: 600;
@@ -387,19 +416,13 @@ tr:hover td {
   margin-bottom: 4px;
   flex: 1;
 }
-
-.detail-top p {
-  font-size: 13px;
-  color: #6b7280;
-}
-
+.detail-top p { font-size: 13px; color: #6b7280; }
 .detail-rows {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-bottom: 24px;
 }
-
 .detail-row {
   display: flex;
   justify-content: space-between;
@@ -408,11 +431,7 @@ tr:hover td {
   padding-bottom: 10px;
   border-bottom: 1px solid #f3f4f6;
 }
-
-.detail-label {
-  color: #6b7280;
-}
-
+.detail-label { color: #6b7280; }
 .detail-value {
   color: #111827;
   font-weight: 600;
@@ -420,13 +439,11 @@ tr:hover td {
   max-width: 60%;
   word-break: break-word;
 }
-
 .modal-footer {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
 }
-
 .btn-close-modal {
   background: #f3f4f6;
   color: #374151;
@@ -436,13 +453,8 @@ tr:hover td {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: 0.2s;
 }
-
-.btn-close-modal:hover {
-  background: #e5e7eb;
-}
-
+.btn-close-modal:hover { background: #e5e7eb; }
 .btn-apply-modal {
   background: #dcfce7;
   color: #16a34a;
@@ -452,11 +464,6 @@ tr:hover td {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: 0.2s;
 }
-
-.btn-apply-modal:hover {
-  background: #bbf7d0;
-}
-
+.btn-apply-modal:hover { background: #bbf7d0; }
 </style>

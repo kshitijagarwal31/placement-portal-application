@@ -29,7 +29,7 @@ def company_dashboard_data():
             "total_drives":       len(all_drives),
             "active_drives":      len(active_drives),
             "total_applications": len(applications),
-            "selected_count":     selected_count,  
+            "selected_count":     selected_count,
         },
         "placement_drives": [
             {

@@ -3,12 +3,16 @@
 
     <div class="topbar">
       <div>
-        <h1>Complete Profile</h1>
+        <h1>My Profile</h1>
         <p>Fill your details to unlock full features and start applying</p>
       </div>
     </div>
 
-    <div class="profile-grid">
+    <div v-if="loading" class="empty" style="padding: 60px 0;">
+      Loading profile...
+    </div>
+
+    <div v-else class="profile-grid">
 
       <div class="section-box preview-box">
         <div class="profile-top">
@@ -35,9 +39,13 @@
             <span class="detail-value">{{ form.skills || '—' }}</span>
           </div>
           <div class="detail-row">
-            <span class="detail-label">Status</span>
-            <span class="detail-value">{{ form.status || '—' }}</span>
+            <span class="detail-label">Resume</span>
+            <span class="detail-value">{{ form.resume ? '📄 Uploaded' : '—' }}</span>
           </div>
+        </div>
+
+        <div class="info-box">
+          <p>💡 Complete your profile to start applying for placement drives!</p>
         </div>
       </div>
 
@@ -84,7 +92,12 @@
 
         <div class="form-group full">
           <label>Resume (PDF) <span class="required">*</span></label>
-          <input type="file" accept=".pdf" class="file-input" @change="handleResumeUpload" />
+          <!-- ✅ Agar resume pehle se hai toh link dikhao -->
+          <div v-if="form.resume && !newResume" class="resume-existing">
+            <a :href="form.resume" target="_blank" class="resume-link">📄 View Current Resume</a>
+            <button class="btn-change-resume" @click="newResume = true">Change Resume</button>
+          </div>
+          <input v-else type="file" accept=".pdf" class="file-input" @change="handleResumeUpload" />
         </div>
 
         <div class="form-bottom">
@@ -101,46 +114,128 @@
 </template>
 
 <script>
+import axios from "axios"
+
 export default {
   name: "StudentCompleteProfile",
 
   data() {
     return {
-      errorMsg: "",
+      loading:    true,
+      errorMsg:   "",
       successMsg: false,
+      newResume:  false,   // ✅ resume change karna hai ya nahi
+      resumeFile: null,
       form: {
-        name: "",
+        name:     "",
         username: "",
-        email: "",
-        college: "",
-        cgpa: "",
-        skills: "",
-        bio: "",
-        resume: null
+        email:    "",
+        college:  "",
+        cgpa:     "",
+        skills:   "",
+        bio:      "",
+        resume:   "",
       }
     }
   },
 
+  async mounted() {
+    await this.fetchProfile()
+  },
+
   methods: {
-    handleResumeUpload(e) {
-      this.form.resume = e.target.files[0]
+
+    getHeaders() {
+      return {
+        headers: {
+          "Authentication-Token": localStorage.getItem("token"),
+        },
+      }
     },
 
-    saveProfile() {
-      if (!this.form.name || !this.form.username || !this.form.email || 
-          !this.form.college || !this.form.cgpa || !this.form.skills) {
+    // ✅ Backend se profile load karo
+    async fetchProfile() {
+      this.loading = true
+      try {
+        const res = await axios.get("http://localhost:5000/student/complete_profile", this.getHeaders())
+        const data = res.data
+
+        this.form.name     = data.name         || ""
+        this.form.username = data.username      || ""
+        this.form.email    = data.email         || ""
+        this.form.college  = data.college_name  || ""
+        this.form.cgpa     = data.cgpa          || ""
+        this.form.skills   = data.skills        || ""
+        this.form.bio      = data.bio           || ""
+        this.form.resume   = data.resume        || ""
+
+      } catch (err) {
+        console.error("Profile load failed:", err)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    handleResumeUpload(e) {
+      this.resumeFile = e.target.files[0]
+    },
+
+    // ✅ Backend pe save karo
+    async saveProfile() {
+      const required = ['name', 'username', 'email', 'college', 'cgpa', 'skills']
+      const allFilled = required.every(f => this.form[f] !== '')
+
+      if (!allFilled) {
         this.errorMsg = "Please fill all required fields!"
         return
       }
 
+      // ✅ Resume check — pehli baar fill karte time required hai
+      if (!this.form.resume && !this.resumeFile) {
+        this.errorMsg = "Please upload your resume!"
+        return
+      }
+
       this.errorMsg = ""
-      this.successMsg = true
 
-      setTimeout(() => {
-        this.successMsg = false
-      }, 3000)
+      try {
+        // ✅ FormData use karo kyunki resume file hai
+        const formData = new FormData()
+        formData.append("name",         this.form.name)
+        formData.append("username",     this.form.username)
+        formData.append("email",        this.form.email)
+        formData.append("college_name", this.form.college)
+        formData.append("cgpa",         this.form.cgpa)
+        formData.append("skills",       this.form.skills)
+        formData.append("bio",          this.form.bio)
 
-      console.log("Profile Data:", this.form)
+        if (this.resumeFile) {
+          formData.append("resume", this.resumeFile)
+        }
+
+        await axios.put(
+          "http://localhost:5000/student/complete_profile",
+          formData,
+          {
+            headers: {
+              "Authentication-Token": localStorage.getItem("token"),
+              "Content-Type": "multipart/form-data"
+            }
+          }
+        )
+
+        this.successMsg = true
+        this.newResume  = false
+        await this.fetchProfile()  // ✅ updated data reload karo
+
+        setTimeout(() => {
+          this.successMsg = false
+        }, 3000)
+
+      } catch (err) {
+        console.error("Profile save failed:", err)
+        this.errorMsg = err.response?.data?.message || "Something went wrong!"
+      }
     }
   }
 }
@@ -150,39 +245,28 @@ export default {
 .topbar {
   margin-bottom: 30px;
 }
-
 .topbar h1 {
   font-size: 34px;
   color: #111827;
   margin-bottom: 5px;
 }
-
 .topbar p {
   color: #6b7280;
   font-size: 15px;
 }
-
 .profile-grid {
   display: grid;
   grid-template-columns: 1fr 1.6fr;
   gap: 24px;
 }
-
 .section-box {
   background: white;
   border-radius: 18px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   padding: 28px;
 }
-
-.preview-box {
-  text-align: center;
-}
-
-.profile-top {
-  margin-bottom: 24px;
-}
-
+.preview-box { text-align: center; }
+.profile-top { margin-bottom: 24px; }
 .profile-avatar {
   width: 80px;
   height: 80px;
@@ -196,59 +280,54 @@ export default {
   font-weight: 700;
   margin: 0 auto 16px;
 }
-
 .profile-top h2 {
   font-size: 22px;
   color: #111827;
   margin-bottom: 4px;
 }
-
-.college {
+.profile-top p {
   color: #6b7280;
-  font-size: 15px;
+  font-size: 14px;
 }
-
-.preview-details {
-  text-align: left;
-}
-
+.preview-details { text-align: left; }
 .detail-row {
   display: flex;
   justify-content: space-between;
   padding: 12px 0;
   border-bottom: 1px solid #f3f4f6;
+  font-size: 14px;
 }
-
-.detail-label {
-  color: #6b7280;
-}
-
+.detail-label { color: #6b7280; }
 .detail-value {
   font-weight: 600;
   color: #111827;
+  text-align: right;
+  max-width: 60%;
+  word-break: break-word;
 }
-
+.info-box {
+  background: #eff6ff;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 13px;
+  color: #2563eb;
+  line-height: 1.6;
+  margin-top: 24px;
+  text-align: left;
+}
 .form-title {
   font-size: 20px;
   font-weight: 600;
   color: #111827;
   margin-bottom: 20px;
 }
-
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
-
-.form-group {
-  margin-bottom: 18px;
-}
-
-.form-group.full {
-  grid-column: span 2;
-}
-
+.form-group { margin-bottom: 18px; }
+.form-group.full { grid-column: span 2; }
 .form-group label {
   display: block;
   margin-bottom: 6px;
@@ -256,13 +335,8 @@ export default {
   color: #374151;
   font-size: 14px;
 }
-
-.required {
-  color: #dc2626;
-}
-
+.required { color: #dc2626; }
 .form-group input,
-.form-group select,
 .form-group textarea {
   width: 100%;
   padding: 11px 14px;
@@ -270,13 +344,14 @@ export default {
   border-radius: 10px;
   font-size: 15px;
   outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: 0.2s;
 }
-
 .form-group input:focus,
 .form-group textarea:focus {
   border-color: #2563eb;
 }
-
 .file-input {
   width: 100%;
   padding: 8px;
@@ -284,7 +359,29 @@ export default {
   border-radius: 10px;
   background: #f8fafc;
 }
-
+.resume-existing {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.resume-link {
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+}
+.resume-link:hover { text-decoration: underline; }
+.btn-change-resume {
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-change-resume:hover { background: #e5e7eb; }
 .btn-save {
   width: 100%;
   padding: 13px;
@@ -296,23 +393,24 @@ export default {
   font-weight: 600;
   cursor: pointer;
   margin-top: 10px;
+  transition: 0.2s;
 }
-
-.btn-save:hover {
-  background: #1d4ed8;
-}
-
+.btn-save:hover { background: #1d4ed8; }
 .success-msg {
   color: #16a34a;
   font-weight: 600;
   text-align: center;
   margin: 10px 0;
 }
-
 .error-msg {
   color: #dc2626;
   font-weight: 600;
   text-align: center;
   margin: 10px 0;
+}
+.empty {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 14px;
 }
 </style>

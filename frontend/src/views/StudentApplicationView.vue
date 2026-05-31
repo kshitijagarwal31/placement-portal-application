@@ -14,7 +14,12 @@
       />
     </div>
 
-    <div class="table-box">
+    <!-- ✅ Loading state -->
+    <div v-if="loading" class="empty" style="padding: 60px 0;">
+      Loading applications...
+    </div>
+
+    <div v-else class="table-box">
       <table>
         <thead>
           <tr>
@@ -33,7 +38,7 @@
             <td>{{ app.company }}</td>
             <td>{{ app.drive }}</td>
             <td>{{ app.date }}</td>
-            <td>{{ app.package }}</td>
+            <td>{{ app.package || '—' }}</td>
             <td>
               <span :class="getStatusClass(app.status)">
                 {{ app.status }}
@@ -51,6 +56,7 @@
       </div>
     </div>
 
+    <!-- ✅ Modal -->
     <div v-if="selectedApp" class="modal-overlay" @click.self="selectedApp = null">
       <div class="modal">
 
@@ -59,56 +65,62 @@
           <button class="btn-close" @click="selectedApp = null">✕</button>
         </div>
 
-        <div class="detail-top">
-          <div class="avatar-lg">{{ selectedApp.student_name.charAt(0) }}</div>
-          <div>
-            <h4>{{ selectedApp.student_name }}</h4>
-            <p>{{ selectedApp.company }} · {{ selectedApp.drive }}</p>
-          </div>
-          <span :class="getStatusClass(selectedApp.status)">{{ selectedApp.status }}</span>
+        <div v-if="modalLoading" class="empty" style="padding: 40px 0;">
+          Loading detail...
         </div>
 
-        <div class="detail-rows">
-          <div class="detail-row">
-            <span class="detail-label">Student Name</span>
-            <span class="detail-value">{{ selectedApp.student_name }}</span>
+        <div v-else>
+          <div class="detail-top">
+            <div class="avatar-lg">{{ selectedApp.student_name ? selectedApp.student_name.charAt(0) : '?' }}</div>
+            <div>
+              <h4>{{ selectedApp.student_name }}</h4>
+              <p>{{ selectedApp.company }} · {{ selectedApp.drive }}</p>
+            </div>
+            <span :class="getStatusClass(selectedApp.status)">{{ selectedApp.status }}</span>
           </div>
-          <div class="detail-row">
-            <span class="detail-label">Branch</span>
-            <span class="detail-value">{{ selectedApp.branch }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">CGPA</span>
-            <span class="detail-value">{{ selectedApp.cgpa }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Email</span>
-            <span class="detail-value">{{ selectedApp.email }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Company</span>
-            <span class="detail-value">{{ selectedApp.company }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Role</span>
-            <span class="detail-value">{{ selectedApp.drive }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Package</span>
-            <span class="detail-value">{{ selectedApp.package }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Applied On</span>
-            <span class="detail-value">{{ selectedApp.date }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Resume</span>
-            <a :href="selectedApp.resume" target="_blank" class="resume-link">📄 View Resume</a>
-          </div>
-        </div>
 
-        <div class="modal-footer">
-          <button class="btn-close-modal" @click="selectedApp = null">Close</button>
+          <div class="detail-rows">
+            <div class="detail-row">
+              <span class="detail-label">Student Name</span>
+              <span class="detail-value">{{ selectedApp.student_name || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Email</span>
+              <span class="detail-value">{{ selectedApp.email || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Company</span>
+              <span class="detail-value">{{ selectedApp.company || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Role</span>
+              <span class="detail-value">{{ selectedApp.drive || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Package</span>
+              <span class="detail-value">{{ selectedApp.package || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Applied On</span>
+              <span class="detail-value">{{ selectedApp.date || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Status</span>
+              <span :class="getStatusClass(selectedApp.status)">{{ selectedApp.status }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Feedback</span>
+              <span class="detail-value">{{ selectedApp.feedback || 'N/A' }}</span>
+            </div>
+            <div class="detail-row" v-if="selectedApp.resume">
+              <span class="detail-label">Resume</span>
+              <a :href="selectedApp.resume" target="_blank" class="resume-link">📄 View Resume</a>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-close-modal" @click="selectedApp = null">Close</button>
+          </div>
         </div>
 
       </div>
@@ -118,21 +130,23 @@
 </template>
 
 <script>
+import axios from "axios"
+
 export default {
   name: "StudentApplicationsView",
 
   data() {
     return {
-      search: "",
-      selectedApp: null,
-      applications: [
-        { id: 1, company: "Google",    drive: "Software Engineer Hiring", date: "20 May 2026", package: "45 LPA", status: "Applied",     student_name: "Rahul Sharma", branch: "CSE", cgpa: "8.5", email: "rahul@college.edu", resume: "#" },
-        { id: 2, company: "Microsoft", drive: "SDE-1 Recruitment",        date: "18 May 2026", package: "40 LPA", status: "Shortlisted", student_name: "Rahul Sharma", branch: "CSE", cgpa: "8.5", email: "rahul@college.edu", resume: "#" },
-        { id: 3, company: "Amazon",    drive: "Backend Developer Drive",  date: "15 May 2026", package: "35 LPA", status: "Rejected",    student_name: "Rahul Sharma", branch: "CSE", cgpa: "8.5", email: "rahul@college.edu", resume: "#" },
-        { id: 4, company: "Flipkart",  drive: "Frontend Hiring",          date: "12 May 2026", package: "28 LPA", status: "Selected",    student_name: "Rahul Sharma", branch: "CSE", cgpa: "8.5", email: "rahul@college.edu", resume: "#" },
-        { id: 5, company: "Zomato",    drive: "Full Stack Developer",     date: "22 May 2026", package: "18 LPA", status: "Applied",     student_name: "Rahul Sharma", branch: "CSE", cgpa: "8.5", email: "rahul@college.edu", resume: "#" },
-      ]
+      loading:      true,
+      modalLoading: false,
+      search:       "",
+      selectedApp:  null,
+      applications: [],
     }
+  },
+
+  async mounted() {
+    await this.fetchApplications()
   },
 
   computed: {
@@ -146,6 +160,15 @@ export default {
   },
 
   methods: {
+
+    getHeaders() {
+      return {
+        headers: {
+          "Authentication-Token": localStorage.getItem("token"),
+        },
+      }
+    },
+
     getStatusClass(status) {
       if (status === 'Selected')    return 'badge-selected'
       if (status === 'Shortlisted') return 'badge-shortlisted'
@@ -153,8 +176,34 @@ export default {
       return 'badge-applied'
     },
 
-    viewDetail(app) {
-      this.selectedApp = app
+    async fetchApplications() {
+      this.loading = true
+      try {
+        const res = await axios.get("http://localhost:5000/student/my_applications", this.getHeaders())
+        this.applications = res.data.applications || []
+      } catch (err) {
+        console.error("Applications load failed:", err)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async viewDetail(app) {
+      this.selectedApp  = app
+      this.modalLoading = true
+      try {
+        const res = await axios.get(`http://localhost:5000/student/application_detail/${app.id}`, this.getHeaders())
+        const d = res.data
+        this.selectedApp = {
+          ...app,
+          feedback     : d.feedback,
+          resume       : d.resume,
+        }
+      } catch (err) {
+        console.error("Application detail load failed:", err)
+      } finally {
+        this.modalLoading = false
+      }
     }
   }
 }
