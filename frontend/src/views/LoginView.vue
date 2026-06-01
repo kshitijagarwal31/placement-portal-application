@@ -40,13 +40,6 @@
             </div>
           </div>
 
-          <div class="options">
-            <label class="remember">
-              <input type="checkbox" />
-              <span>Remember me</span>
-            </label>
-          </div>
-
           <button type="submit" class="login-btn" :disabled="loading">
             <span v-if="loading">Signing In...</span>
             <span v-else>Login</span>
@@ -222,18 +215,6 @@ export default {
   color: #2563eb;
   cursor: pointer;
   font-weight: 600;
-}
-
-.options {
-  margin-bottom: 25px;
-}
-
-.remember {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #6b7280;
 }
 
 .login-btn {

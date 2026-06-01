@@ -16,6 +16,10 @@
           {{ errorMessage }}
         </div>
 
+        <div v-if="successMessage" class="success-box">
+          ✅ {{ successMessage }}
+        </div>
+
         <form @submit.prevent="handleRegister">
 
           <div class="input-group">
@@ -44,7 +48,6 @@
 
           <div class="input-group">
             <label>Password</label>
-
             <div class="password-box">
               <input
                 :type="showPassword ? 'text' : 'password'"
@@ -52,17 +55,11 @@
                 placeholder="Create password"
                 required
               />
-
               <button type="button" class="show-btn" @click="showPassword = !showPassword">
                 {{ showPassword ? 'Hide' : 'Show' }}
               </button>
             </div>
           </div>
-
-          <label class="terms">
-            <input type="checkbox" required />
-            <span>I agree to terms & conditions</span>
-          </label>
 
           <button type="submit" class="btn" :disabled="loading">
             <span v-if="loading">Creating Account...</span>
@@ -99,21 +96,23 @@ export default {
 
   data() {
     return {
-      fullName: "",
-      username: "",
-      email: "",
-      role: "",
-      password: "",
-      showPassword: false,
-      loading: false,
-      errorMessage: ""
+      fullName:       "",
+      username:       "",
+      email:          "",
+      role:           "",
+      password:       "",
+      showPassword:   false,
+      loading:        false,
+      errorMessage:   "",
+      successMessage: ""
     }
   },
 
   methods: {
     async handleRegister() {
-      this.errorMessage = ""
-      this.loading = true
+      this.errorMessage   = ""
+      this.successMessage = ""
+      this.loading        = true
 
       const url = this.role === "student"
         ? "http://localhost:5000/register/student"
@@ -126,11 +125,15 @@ export default {
           email:    this.email,
           password: this.password
         })
-        alert(res.data.message)
-        this.$router.push("/login")
-      
+
+        this.successMessage = res.data.message
+
+        setTimeout(() => {
+          this.$router.push("/login")
+        }, 2000)
+
       } catch (err) {
-        this.errorMessage = err.response.data.message 
+        this.errorMessage = err.response.data.message
       } finally {
         this.loading = false
       }
@@ -166,7 +169,7 @@ export default {
   width: 100%;
   max-width: 500px;
   background: #fff;
-  padding: 48px;  
+  padding: 48px;
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.06);
 }
@@ -177,7 +180,7 @@ export default {
 }
 
 .top-section h2 {
-  font-size: 36px; 
+  font-size: 36px;
   margin-bottom: 8px;
 }
 
@@ -195,6 +198,16 @@ export default {
   font-size: 14px;
 }
 
+.success-box {
+  background: #f0fdf4;
+  color: #16a34a;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .input-group {
   margin-bottom: 18px;
 }
@@ -209,11 +222,11 @@ export default {
 .input-group input,
 .input-group select {
   width: 100%;
-  padding: 14px;  
+  padding: 14px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   outline: none;
-  font-size: 15px;  
+  font-size: 15px;
 }
 
 .input-group input:focus,
@@ -236,18 +249,9 @@ export default {
   cursor: pointer;
 }
 
-.terms {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
-  font-size: 13px;
-  color: #6b7280;
-}
-
 .btn {
   width: 100%;
-  padding: 14px;    
+  padding: 14px;
   background: #2563eb;
   color: white;
   border: none;
