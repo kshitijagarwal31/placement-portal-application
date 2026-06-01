@@ -162,7 +162,11 @@ export default {
 
       } catch (err) {
         console.error("Drive submit failed:", err)
-        this.errorMsg = "Something went wrong! Try again."
+        if (err.response && err.response.status === 403) {
+          this.errorMsg = err.response.data.message
+        } else {
+          this.errorMsg = "Something went wrong! Try again."
+        }
       }
     }
   }

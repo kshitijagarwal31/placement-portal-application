@@ -106,6 +106,11 @@ def complete_company_profile():
 @auth_required("token")
 @roles_required("company")
 def create_drive():
+    
+    company = CompanyProfile.query.filter_by(user_id=current_user.id).first()
+    if not company or not company.industry or not company.address or not company.hr_contact_number or not company.website_link:
+        return jsonify({"message": "Please complete your profile before creating a drive ❌"}), 403
+
     data = request.get_json()
 
     drive = PlacementDrive(
@@ -122,7 +127,6 @@ def create_drive():
     db.session.commit()
 
     return jsonify({"message": "Drive created successfully ✅"}), 201
-
 
 @company_bp.route("/company/my_drives", methods=["GET"])
 @auth_required("token")
